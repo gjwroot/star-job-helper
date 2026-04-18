@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Job Helper - 管理后台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .sidebar-item { transition: all 0.2s; }
+        .sidebar-item:hover, .sidebar-item.active { background: rgba(255,255,255,0.12); }
+        .stat-card { transition: transform 0.2s, box-shadow 0.2s; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+        .toast { animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+        .modal-overlay { animation: modalFadeIn 0.2s ease; }
+        @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<!-- Toast 容器 -->
+<div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+<!-- 登录页面 -->
+<div id="login-page" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md fade-in">
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-800">Star Job Helper</h1>
+            <p class="text-gray-500 mt-1">管理后台</p>
+        </div>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">手机号</label>
+                <input id="login-phone" type="text" placeholder="请输入手机号"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                <input id="login-password" type="password" placeholder="请输入密码"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition">
+            </div>
+            <button onclick="handleLogin()" id="login-btn"
+                class="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-medium hover:from-indigo-700 hover:to-purple-700 transition shadow-lg shadow-indigo-200">
+                登录
+            </button>
+            <p id="login-error" class="text-red-500 text-sm text-center hidden"></p>
+        </div>
+    </div>
+</div>
+
+<!-- 主界面 -->
+<div id="admin-app" class="hidden min-h-screen flex">
+    <!-- 侧边栏 -->
+    <aside class="w-64 bg-gradient-to-b from-indigo-700 to-purple-800 text-white flex-shrink-0 flex flex-col">
+        <div class="p-6 border-b border-indigo-600">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="font-bold text-lg">管理后台</h2>
+                    <p class="text-indigo-200 text-xs">Star Job Helper</p>
+                </div>
+            </div>
+        </div>
+        <nav class="flex-1 py-4">
+            <div class="px-4 mb-2 text-xs text-indigo-300 uppercase tracking-wider">导航</div>
+            <button onclick="switchTab('dashboard')" data-tab="dashboard"
+                class="sidebar-item active w-full text-left px-6 py-3 flex items-center gap-3 text-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                数据仪表盘
+            </button>
+            <button onclick="switchTab('users')" data-tab="users"
+                class="sidebar-item w-full text-left px-6 py-3 flex items-center gap-3 text-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
+                用户管理
+            </button>
+            <button onclick="switchTab('moods')" data-tab="moods"
+                class="sidebar-item w-full text-left px-6 py-3 flex items-center gap-3 text-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                情绪统计
+            </button>
+            <button onclick="switchTab('templates')" data-tab="templates"
+                class="sidebar-item w-full text-left px-6 py-3 flex items-center gap-3 text-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                任务模板
+            </button>
+        </nav>
+        <div class="p-4 border-t border-indigo-600">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center text-sm font-bold" id="user-avatar">A</div>
+                <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium truncate" id="user-name">管理员</div>
+                    <div class="text-xs text-indigo-200" id="user-role">admin</div>
+                </div>
+            </div>
+            <button onclick="handleLogout()" class="w-full py-2 text-sm bg-white/10 hover:bg-white/20 rounded-lg transition">
+                退出登录
+            </button>
+        </div>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="flex-1 overflow-auto">
+        <!-- 顶部栏 -->
+        <header class="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between sticky top-0 z-10">
+            <h1 class="text-xl font-bold text-gray-800" id="page-title">数据仪表盘</h1>
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-gray-500" id="current-time"></span>
+                <button onclick="refreshCurrentTab()" class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-sm hover:bg-indigo-100 transition">
+                    刷新数据
+                </button>
+            </div>
+        </header>
+
+        <!-- 仪表盘 -->
+        <div id="tab-dashboard" class="p-8 fade-in">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="stat-card bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                            <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        </div>
+                        <span class="text-xs text-green-500 font-medium bg-green-50 px-2 py-1 rounded-full" id="stat-users-trend">--</span>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-800" id="stat-total-users">0</div>
+                    <div class="text-sm text-gray-500 mt-1">总用户数</div>
+                </div>
+                <div class="stat-card bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-800" id="stat-today-active">0</div>
+                    <div class="text-sm text-gray-500 mt-1">今日活跃用户</div>
+                </div>
+                <div class="stat-card bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+                            <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-800" id="stat-tasks-completed">0</div>
+                    <div class="text-sm text-gray-500 mt-1">总任务完成数</div>
+                </div>
+                <div class="stat-card bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center">
+                            <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-800" id="stat-total-moods">0</div>
+                    <div class="text-sm text-gray-500 mt-1">总情绪记录</div>
+                </div>
+            </div>
+
+            <!-- 今日概览 -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 class="text-sm font-semibold text-gray-500 mb-3">今日任务完成</h3>
+                    <div class="text-4xl font-bold text-indigo-600" id="stat-today-tasks">0</div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 class="text-sm font-semibold text-gray-500 mb-3">今日情绪记录</h3>
+                    <div class="text-4xl font-bold text-pink-600" id="stat-today-moods">0</div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 class="text-sm font-semibold text-gray-500 mb-3">总成就解锁</h3>
+                    <div class="text-4xl font-bold text-amber-600" id="stat-total-achievements">0</div>
+                </div>
+            </div>
+
+            <!-- 图表 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 class="font-semibold text-gray-800 mb-4">近7天任务完成趋势</h3>
+                    <canvas id="chart-weekly-tasks" height="250"></canvas>
+                </div>
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 class="font-semibold text-gray-800 mb-4">近30天用户注册趋势</h3>
+                    <canvas id="chart-registration" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 用户管理 -->
+        <div id="tab-users" class="p-8 hidden fade-in">
+            <!-- 搜索筛选 -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
+                <div class="flex flex-wrap gap-4 items-end">
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">搜索</label>
+                        <input id="user-search" type="text" placeholder="姓名或手机号"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm">
+                    </div>
+                    <div class="w-40">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">角色</label>
+                        <select id="user-role-filter" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm">
+                            <option value="">全部</option>
+                            <option value="user">用户</option>
+                            <option value="counselor">咨询师</option>
+                            <option value="admin">管理员</option>
+                        </select>
+                    </div>
+                    <button onclick="loadUsers()" class="px-6 py-2 bg-indigo-600 text-white rounded-xl text-sm hover:bg-indigo-700 transition">
+                        搜索
+                    </button>
+                </div>
+            </div>
+
+            <!-- 用户表格 -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-gray-200">
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">ID</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">姓名</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">手机号</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">角色</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">任务完成</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">情绪记录</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">注册时间</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <tr><td colspan="8" class="px-6 py-12 text-center text-gray-400">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                    <div class="text-sm text-gray-500" id="users-pagination-info">共 0 条</div>
+                    <div class="flex gap-2" id="users-pagination"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 情绪统计 -->
+        <div id="tab-moods" class="p-8 hidden fade-in">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold text-gray-800">情绪类型分布</h3>
+                        <select id="mood-days-filter" onchange="loadMoodStats()" class="text-sm border border-gray-300 rounded-lg px-3 py-1 outline-none">
+                            <option value="7">近7天</option>
+                            <option value="30" selected>近30天</option>
+                            <option value="90">近90天</option>
+                            <option value="365">近一年</option>
+                        </select>
+                    </div>
+                    <canvas id="chart-mood-distribution" height="280"></canvas>
+                </div>
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 class="font-semibold text-gray-800 mb-4">情绪趋势</h3>
+                    <canvas id="chart-mood-trend" height="280"></canvas>
+                </div>
+            </div>
+            <!-- 情绪分布详情 -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <h3 class="font-semibold text-gray-800 mb-4">情绪分布详情</h3>
+                <div id="mood-detail-cards" class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div class="text-center text-gray-400 py-8 col-span-5">加载中...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 任务模板 -->
+        <div id="tab-templates" class="p-8 hidden fade-in">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex gap-2">
+                    <button onclick="loadTemplates()" class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-sm hover:bg-indigo-100 transition">全部</button>
+                    <button onclick="loadTemplates(true)" class="px-4 py-2 bg-gray-50 text-gray-600 rounded-xl text-sm hover:bg-gray-100 transition">公开</button>
+                    <button onclick="loadTemplates(false)" class="px-4 py-2 bg-gray-50 text-gray-600 rounded-xl text-sm hover:bg-gray-100 transition">私有</button>
+                </div>
+                <button onclick="openTemplateModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm hover:bg-indigo-700 transition flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    新建模板
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="templates-grid">
+                <div class="text-center text-gray-400 py-12 col-span-3">加载中...</div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- 用户详情弹窗 -->
+<div id="user-detail-modal" class="hidden fixed inset-0 z-40">
+    <div class="modal-overlay absolute inset-0 bg-black/40" onclick="closeUserDetailModal()"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-auto p-8">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold text-gray-800">用户详情</h2>
+            <button onclick="closeUserDetailModal()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div id="user-detail-content"></div>
+    </div>
+</div>
+
+<!-- 模板编辑弹窗 -->
+<div id="template-modal" class="hidden fixed inset-0 z-40">
+    <div class="modal-overlay absolute inset-0 bg-black/40" onclick="closeTemplateModal()"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] overflow-auto p-8">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold text-gray-800" id="template-modal-title">新建模板</h2>
+            <button onclick="closeTemplateModal()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <form id="template-form" onsubmit="handleTemplateSubmit(event)" class="space-y-4">
+            <input type="hidden" id="template-edit-id">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">模板名称</label>
+                <input id="template-name" type="text" required placeholder="例如：每日冥想"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">图标（emoji）</label>
+                <input id="template-icon" type="text" placeholder="例如：&#x1F9D8;"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">步骤（每行一个步骤）</label>
+                <textarea id="template-steps" rows="5" placeholder="找到安静的角落&#10;闭上眼睛深呼吸&#10;冥想5分钟"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm resize-none"></textarea>
+            </div>
+            <div class="flex items-center gap-2">
+                <input id="template-public" type="checkbox" checked class="w-4 h-4 text-indigo-600 rounded">
+                <label for="template-public" class="text-sm text-gray-700">公开模板</label>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closeTemplateModal()" class="flex-1 py-2 border border-gray-300 text-gray-700 rounded-xl text-sm hover:bg-gray-50 transition">取消</button>
+                <button type="submit" class="flex-1 py-2 bg-indigo-600 text-white rounded-xl text-sm hover:bg-indigo-700 transition">保存</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 角色修改弹窗 -->
+<div id="role-modal" class="hidden fixed inset-0 z-40">
+    <div class="modal-overlay absolute inset-0 bg-black/40" onclick="closeRoleModal()"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">修改用户角色</h2>
+        <p class="text-sm text-gray-500 mb-4">用户: <span id="role-user-name" class="font-medium text-gray-700"></span></p>
+        <input type="hidden" id="role-user-id">
+        <select id="role-select" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm mb-6">
+            <option value="user">用户 (user)</option>
+            <option value="counselor">咨询师 (counselor)</option>
+            <option value="admin">管理员 (admin)</option>
+        </select>
+        <div class="flex gap-3">
+            <button onclick="closeRoleModal()" class="flex-1 py-2 border border-gray-300 text-gray-700 rounded-xl text-sm hover:bg-gray-50 transition">取消</button>
+            <button onclick="handleRoleChange()" class="flex-1 py-2 bg-indigo-600 text-white rounded-xl text-sm hover:bg-indigo-700 transition">确认修改</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== 配置 ====================
+const API_BASE = 'http://localhost:8000/api';
+let token = localStorage.getItem('admin_token') || '';
+let currentUser = null;
+let currentPage = 'dashboard';
+let usersPage = 1;
+let charts = {};
+
+// ==================== 工具函数 ====================
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        info: 'bg-blue-500',
+        warning: 'bg-amber-500',
+    };
+    toast.className = `toast ${colors[type]} text-white px-6 py-3 rounded-xl shadow-lg text-sm font-medium`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+async function api(method, path, body = null) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const opts = { method, headers };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(`${API_BASE}${path}`, opts);
+    const data = await res.json();
+    if (data.code !== 0 && data.code !== undefined) {
+        throw new Error(data.message || '请求失败');
+    }
+    return data;
+}
+
+function formatDate(iso) {
+    if (!iso) return '--';
+    const d = new Date(iso);
+    return d.toLocaleDateString('zh-CN') + ' ' + d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatDateShort(iso) {
+    if (!iso) return '--';
+    return new Date(iso).toLocaleDateString('zh-CN');
+}
+
+const roleLabels = { user: '用户', counselor: '咨询师', admin: '管理员' };
+const roleColors = { user: 'bg-gray-100 text-gray-700', counselor: 'bg-blue-100 text-blue-700', admin: 'bg-red-100 text-red-700' };
+
+const moodLabels = { happy: '开心', calm: '平静', anxious: '焦虑', sad: '难过', angry: '生气' };
+const moodColors = { happy: '#10B981', calm: '#3B82F6', anxious: '#F59E0B', sad: '#6366F1', angry: '#EF4444' };
+const moodBgColors = { happy: 'rgba(16,185,129,0.2)', calm: 'rgba(59,130,246,0.2)', anxious: 'rgba(245,158,11,0.2)', sad: 'rgba(99,102,241,0.2)', angry: 'rgba(239,68,68,0.2)' };
+
+// ==================== 登录/登出 ====================
+async function handleLogin() {
+    const phone = document.getElementById('login-phone').value.trim();
+    const password = document.getElementById('login-password').value.trim();
+    const errorEl = document.getElementById('login-error');
+    const btn = document.getElementById('login-btn');
+
+    if (!phone || !password) {
+        errorEl.textContent = '请输入手机号和密码';
+        errorEl.classList.remove('hidden');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '登录中...';
+    errorEl.classList.add('hidden');
+
+    try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, password }),
+        });
+        const data = await res.json();
+
+        if (data.code !== 0) {
+            throw new Error(data.message || '登录失败');
+        }
+
+        token = data.data.access_token;
+        localStorage.setItem('admin_token', token);
+
+        // 获取当前用户信息
+        currentUser = (await api('GET', '/auth/me')).data;
+
+        if (!['admin', 'counselor'].includes(currentUser.role)) {
+            token = '';
+            localStorage.removeItem('admin_token');
+            throw new Error('权限不足，仅管理员和咨询师可访问');
+        }
+
+        enterAdmin();
+    } catch (e) {
+        errorEl.textContent = e.message;
+        errorEl.classList.remove('hidden');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '登录';
+    }
+}
+
+function handleLogout() {
+    token = '';
+    currentUser = null;
+    localStorage.removeItem('admin_token');
+    document.getElementById('admin-app').classList.add('hidden');
+    document.getElementById('login-page').classList.remove('hidden');
+    document.getElementById('login-phone').value = '';
+    document.getElementById('login-password').value = '';
+}
+
+function enterAdmin() {
+    document.getElementById('login-page').classList.add('hidden');
+    document.getElementById('admin-app').classList.remove('hidden');
+    document.getElementById('user-name').textContent = currentUser.name;
+    document.getElementById('user-role').textContent = roleLabels[currentUser.role] || currentUser.role;
+    document.getElementById('user-avatar').textContent = currentUser.name.charAt(0).toUpperCase();
+    switchTab('dashboard');
+}
+
+// ==================== Tab 切换 ====================
+function switchTab(tab) {
+    currentPage = tab;
+    document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
+    document.getElementById(`tab-${tab}`).classList.remove('hidden');
+
+    document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+    document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+
+    const titles = { dashboard: '数据仪表盘', users: '用户管理', moods: '情绪统计', templates: '任务模板' };
+    document.getElementById('page-title').textContent = titles[tab];
+
+    // 加载数据
+    if (tab === 'dashboard') loadDashboard();
+    else if (tab === 'users') loadUsers();
+    else if (tab === 'moods') loadMoodStats();
+    else if (tab === 'templates') loadTemplates();
+}
+
+function refreshCurrentTab() {
+    switchTab(currentPage);
+    showToast('数据已刷新', 'info');
+}
+
+// ==================== 仪表盘 ====================
+async function loadDashboard() {
+    try {
+        const res = await api('GET', '/admin/stats');
+        const d = res.data;
+
+        document.getElementById('stat-total-users').textContent = d.total_users;
+        document.getElementById('stat-today-active').textContent = d.today.active_users;
+        document.getElementById('stat-tasks-completed').textContent = d.total_tasks_completed;
+        document.getElementById('stat-total-moods').textContent = d.total_moods;
+        document.getElementById('stat-today-tasks').textContent = d.today.tasks_completed;
+        document.getElementById('stat-today-moods').textContent = d.today.moods_logged;
+        document.getElementById('stat-total-achievements').textContent = d.total_achievements;
+
+        // 近7天趋势图
+        renderWeeklyTasksChart(d.weekly_trend);
+        // 注册趋势图
+        renderRegistrationChart(d.registration_trend);
+    } catch (e) {
+        showToast('加载仪表盘失败: ' + e.message, 'error');
+    }
+}
+
+function renderWeeklyTasksChart(data) {
+    if (charts.weeklyTasks) charts.weeklyTasks.destroy();
+    const ctx = document.getElementById('chart-weekly-tasks').getContext('2d');
+    charts.weeklyTasks = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.map(d => d.date.slice(5)),
+            datasets: [
+                {
+                    label: '任务完成',
+                    data: data.map(d => d.tasks_completed),
+                    borderColor: '#6366F1',
+                    backgroundColor: 'rgba(99,102,241,0.1)',
+                    fill: true,
+                    tension: 0.4,
+                },
+                {
+                    label: '星星获得',
+                    data: data.map(d => d.stars_earned),
+                    borderColor: '#F59E0B',
+                    backgroundColor: 'rgba(245,158,11,0.1)',
+                    fill: true,
+                    tension: 0.4,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } },
+            scales: { y: { beginAtZero: true } },
+        },
+    });
+}
+
+function renderRegistrationChart(data) {
+    if (charts.registration) charts.registration.destroy();
+    const ctx = document.getElementById('chart-registration').getContext('2d');
+    charts.registration = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(d => d.date.slice(5)),
+            datasets: [{
+                label: '新注册用户',
+                data: data.map(d => d.new_users),
+                backgroundColor: 'rgba(99,102,241,0.6)',
+                borderColor: '#6366F1',
+                borderWidth: 1,
+                borderRadius: 6,
+            }],
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+        },
+    });
+}
+
+// ==================== 用户管理 ====================
+async function loadUsers(page = 1) {
+    usersPage = page;
+    const keyword = document.getElementById('user-search').value.trim();
+    const role = document.getElementById('user-role-filter').value;
+
+    try {
+        const params = new URLSearchParams({ page, page_size: 20 });
+        if (keyword) params.set('keyword', keyword);
+        if (role) params.set('role', role);
+
+        const res = await api('GET', `/admin/users?${params}`);
+        const d = res.data;
+
+        const tbody = document.getElementById('users-table-body');
+        if (d.items.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-12 text-center text-gray-400">暂无用户数据</td></tr>';
+        } else {
+            tbody.innerHTML = d.items.map(u => `
+                <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
+                    <td class="px-6 py-4 text-sm text-gray-500">${u.id}</td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-xs font-bold text-indigo-600">${u.name.charAt(0)}</div>
+                            <span class="text-sm font-medium text-gray-800">${u.name}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-500">${u.phone}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 text-xs font-medium rounded-full ${roleColors[u.role]}">${roleLabels[u.role] || u.role}</span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-700">${u.tasks_completed}</td>
+                    <td class="px-6 py-4 text-sm text-gray-700">${u.mood_count}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">${formatDate(u.created_at)}</td>
+                    <td class="px-6 py-4">
+                        <div class="flex gap-2">
+                            <button onclick="viewUserDetail(${u.id})" class="text-indigo-600 hover:text-indigo-800 text-xs font-medium">详情</button>
+                            <button onclick="openRoleModal(${u.id}, '${u.name}', '${u.role}')" class="text-amber-600 hover:text-amber-800 text-xs font-medium">改角色</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 分页
+        const totalPages = Math.ceil(d.total / d.page_size);
+        document.getElementById('users-pagination-info').textContent = `共 ${d.total} 条，第 ${d.page}/${totalPages} 页`;
+        const pagination = document.getElementById('users-pagination');
+        let paginationHtml = '';
+        if (d.page > 1) paginationHtml += `<button onclick="loadUsers(${d.page - 1})" class="px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">上一页</button>`;
+        for (let i = Math.max(1, d.page - 2); i <= Math.min(totalPages, d.page + 2); i++) {
+            const active = i === d.page ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-300 hover:bg-gray-50';
+            paginationHtml += `<button onclick="loadUsers(${i})" class="px-3 py-1 text-sm border ${active} rounded-lg">${i}</button>`;
+        }
+        if (d.page < totalPages) paginationHtml += `<button onclick="loadUsers(${d.page + 1})" class="px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">下一页</button>`;
+        pagination.innerHTML = paginationHtml;
+    } catch (e) {
+        showToast('加载用户列表失败: ' + e.message, 'error');
+    }
+}
+
+async function viewUserDetail(userId) {
+    try {
+        const res = await api('GET', `/admin/users/${userId}`);
+        const u = res.data;
+        const s = u.stats;
+
+        let recentMoodsHtml = '';
+        if (u.recent_moods.length > 0) {
+            recentMoodsHtml = u.recent_moods.map(m => `
+                <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full" style="background:${moodColors[m.mood_type] || '#999'}"></span>
+                        <span class="text-sm">${moodLabels[m.mood_type] || m.mood_type}</span>
+                    </div>
+                    <span class="text-xs text-gray-400">${formatDate(m.created_at)}</span>
+                </div>
+            `).join('');
+        } else {
+            recentMoodsHtml = '<p class="text-gray-400 text-sm py-4 text-center">暂无情绪记录</p>';
+        }
+
+        document.getElementById('user-detail-content').innerHTML = `
+            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200">
+                <div class="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center text-2xl font-bold text-indigo-600">${u.name.charAt(0)}</div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800">${u.name}</h3>
+                    <p class="text-sm text-gray-500">${u.phone}</p>
+                    <span class="inline-block mt-1 px-2 py-1 text-xs font-medium rounded-full ${roleColors[u.role]}">${roleLabels[u.role]}</span>
+                </div>
+                <div class="ml-auto text-sm text-gray-400">注册于 ${formatDate(u.created_at)}</div>
+            </div>
+            <div class="grid grid-cols-4 gap-4 mb-6">
+                <div class="text-center p-4 bg-gray-50 rounded-xl">
+                    <div class="text-2xl font-bold text-gray-800">${s.total_tasks}</div>
+                    <div class="text-xs text-gray-500 mt-1">总任务</div>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-xl">
+                    <div class="text-2xl font-bold text-green-600">${s.completed_tasks}</div>
+                    <div class="text-xs text-gray-500 mt-1">已完成</div>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-xl">
+                    <div class="text-2xl font-bold text-pink-600">${s.total_moods}</div>
+                    <div class="text-xs text-gray-500 mt-1">情绪记录</div>
+                </div>
+                <div class="text-center p-4 bg-gray-50 rounded-xl">
+                    <div class="text-2xl font-bold text-amber-600">${s.total_achievements}</div>
+                    <div class="text-xs text-gray-500 mt-1">成就</div>
+                </div>
+            </div>
+            <h4 class="font-semibold text-gray-700 mb-3">最近情绪记录</h4>
+            <div class="bg-gray-50 rounded-xl p-4">${recentMoodsHtml}</div>
+        `;
+        document.getElementById('user-detail-modal').classList.remove('hidden');
+    } catch (e) {
+        showToast('加载用户详情失败: ' + e.message, 'error');
+    }
+}
+
+function closeUserDetailModal() {
+    document.getElementById('user-detail-modal').classList.add('hidden');
+}
+
+function openRoleModal(userId, name, currentRole) {
+    document.getElementById('role-user-id').value = userId;
+    document.getElementById('role-user-name').textContent = name;
+    document.getElementById('role-select').value = currentRole;
+    document.getElementById('role-modal').classList.remove('hidden');
+}
+
+function closeRoleModal() {
+    document.getElementById('role-modal').classList.add('hidden');
+}
+
+async function handleRoleChange() {
+    const userId = document.getElementById('role-user-id').value;
+    const role = document.getElementById('role-select').value;
+    try {
+        await api('PUT', `/admin/users/${userId}/role`, { role });
+        showToast('角色修改成功');
+        closeRoleModal();
+        loadUsers(usersPage);
+    } catch (e) {
+        showToast('修改失败: ' + e.message, 'error');
+    }
+}
+
+// ==================== 情绪统计 ====================
+async function loadMoodStats() {
+    const days = document.getElementById('mood-days-filter').value;
+    try {
+        const res = await api('GET', `/admin/mood-stats?days=${days}`);
+        const d = res.data;
+
+        renderMoodDistributionChart(d.distribution);
+        renderMoodTrendChart(d.daily_trend);
+        renderMoodDetailCards(d.distribution, d.total_records);
+    } catch (e) {
+        showToast('加载情绪统计失败: ' + e.message, 'error');
+    }
+}
+
+function renderMoodDistributionChart(distribution) {
+    if (charts.moodDist) charts.moodDist.destroy();
+    const ctx = document.getElementById('chart-mood-distribution').getContext('2d');
+    charts.moodDist = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: distribution.map(d => d.label),
+            datasets: [{
+                data: distribution.map(d => d.count),
+                backgroundColor: distribution.map(d => moodColors[d.mood_type] || '#999'),
+                borderWidth: 2,
+                borderColor: '#fff',
+            }],
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom', labels: { padding: 16 } },
+            },
+        },
+    });
+}
+
+function renderMoodTrendChart(trend) {
+    if (charts.moodTrend) charts.moodTrend.destroy();
+    const ctx = document.getElementById('chart-mood-trend').getContext('2d');
+
+    const moodTypes = ['happy', 'calm', 'anxious', 'sad', 'angry'];
+    const datasets = moodTypes.map(type => ({
+        label: moodLabels[type],
+        data: trend.map(d => d[type] || 0),
+        borderColor: moodColors[type],
+        backgroundColor: moodBgColors[type],
+        fill: true,
+        tension: 0.4,
+    }));
+
+    charts.moodTrend = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: trend.map(d => d.date.slice(5)),
+            datasets,
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } },
+            scales: { y: { beginAtZero: true } },
+        },
+    });
+}
+
+function renderMoodDetailCards(distribution, total) {
+    const container = document.getElementById('mood-detail-cards');
+    if (distribution.length === 0) {
+        container.innerHTML = '<div class="text-center text-gray-400 py-8 col-span-5">暂无数据</div>';
+        return;
+    }
+    container.innerHTML = distribution.map(d => `
+        <div class="bg-gray-50 rounded-xl p-4 text-center">
+            <div class="w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center" style="background:${moodBgColors[d.mood_type]}">
+                <span class="text-lg">${d.count > 0 ? { happy: '&#x1F60A;', calm: '&#x1F60C;', anxious: '&#x1F630;', sad: '&#x1F622;', angry: '&#x1F621;' }[d.mood_type] || '&#x2753;' : '&#x2753;'}</span>
+            </div>
+            <div class="text-sm font-medium text-gray-700">${d.label}</div>
+            <div class="text-2xl font-bold mt-1" style="color:${moodColors[d.mood_type]}">${d.count}</div>
+            <div class="text-xs text-gray-400 mt-1">${d.percentage}%</div>
+        </div>
+    `).join('');
+}
+
+// ==================== 任务模板 ====================
+async function loadTemplates(isPublic = null) {
+    try {
+        let params = 'page=1&page_size=50';
+        if (isPublic !== null && isPublic !== undefined) params += `&is_public=${isPublic}`;
+        const res = await api('GET', `/admin/task-templates?${params}`);
+        const d = res.data;
+
+        const grid = document.getElementById('templates-grid');
+        if (d.items.length === 0) {
+            grid.innerHTML = '<div class="text-center text-gray-400 py-12 col-span-3">暂无模板</div>';
+            return;
+        }
+
+        grid.innerHTML = d.items.map(t => `
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">${t.icon || '&#x1F4CB;'}</span>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">${t.name}</h3>
+                            <span class="text-xs ${t.is_public ? 'text-green-600 bg-green-50' : 'text-gray-500 bg-gray-100'} px-2 py-0.5 rounded-full">${t.is_public ? '公开' : '私有'}</span>
+                        </div>
+                    </div>
+                </div>
+                ${t.steps && t.steps.length > 0 ? `
+                <div class="mb-4">
+                    <div class="text-xs text-gray-500 mb-2">步骤 (${t.steps.length})</div>
+                    <ol class="space-y-1">
+                        ${t.steps.slice(0, 4).map((s, i) => `<li class="text-sm text-gray-600 flex gap-2"><span class="text-indigo-400 font-medium">${i + 1}.</span>${s}</li>`).join('')}
+                        ${t.steps.length > 4 ? `<li class="text-xs text-gray-400">...还有 ${t.steps.length - 4} 个步骤</li>` : ''}
+                    </ol>
+                </div>` : ''}
+                <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                    <span class="text-xs text-gray-400">使用 ${t.usage_count} 次</span>
+                    <div class="flex gap-2">
+                        <button onclick="editTemplate(${JSON.stringify(t).replace(/"/g, '&quot;')})" class="text-indigo-600 hover:text-indigo-800 text-xs font-medium">编辑</button>
+                        <button onclick="deleteTemplate(${t.id})" class="text-red-500 hover:text-red-700 text-xs font-medium">删除</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) {
+        showToast('加载模板失败: ' + e.message, 'error');
+    }
+}
+
+function openTemplateModal(template = null) {
+    document.getElementById('template-modal-title').textContent = template ? '编辑模板' : '新建模板';
+    document.getElementById('template-edit-id').value = template ? template.id : '';
+    document.getElementById('template-name').value = template ? template.name : '';
+    document.getElementById('template-icon').value = template ? (template.icon || '') : '';
+    document.getElementById('template-steps').value = template && template.steps ? template.steps.join('\n') : '';
+    document.getElementById('template-public').checked = template ? template.is_public : true;
+    document.getElementById('template-modal').classList.remove('hidden');
+}
+
+function closeTemplateModal() {
+    document.getElementById('template-modal').classList.add('hidden');
+}
+
+function editTemplate(template) {
+    openTemplateModal(template);
+}
+
+async function handleTemplateSubmit(e) {
+    e.preventDefault();
+    const editId = document.getElementById('template-edit-id').value;
+    const name = document.getElementById('template-name').value.trim();
+    const icon = document.getElementById('template-icon').value.trim() || null;
+    const stepsText = document.getElementById('template-steps').value.trim();
+    const steps = stepsText ? stepsText.split('\n').map(s => s.trim()).filter(Boolean) : [];
+    const isPublic = document.getElementById('template-public').checked;
+
+    try {
+        if (editId) {
+            await api('PUT', `/admin/task-templates/${editId}`, { name, icon, steps, is_public });
+            showToast('模板更新成功');
+        } else {
+            await api('POST', '/admin/task-templates', { name, icon, steps, is_public });
+            showToast('模板创建成功');
+        }
+        closeTemplateModal();
+        loadTemplates();
+    } catch (e) {
+        showToast('操作失败: ' + e.message, 'error');
+    }
+}
+
+async function deleteTemplate(id) {
+    if (!confirm('确定要删除该模板吗？')) return;
+    try {
+        await api('DELETE', `/admin/task-templates/${id}`);
+        showToast('模板已删除');
+        loadTemplates();
+    } catch (e) {
+        showToast('删除失败: ' + e.message, 'error');
+    }
+}
+
+// ==================== 时间更新 ====================
+function updateTime() {
+    const now = new Date();
+    document.getElementById('current-time').textContent = now.toLocaleString('zh-CN');
+}
+setInterval(updateTime, 1000);
+updateTime();
+
+// ==================== 初始化 ====================
+async function init() {
+    if (token) {
+        try {
+            currentUser = (await api('GET', '/auth/me')).data;
+            if (['admin', 'counselor'].includes(currentUser.role)) {
+                enterAdmin();
+            } else {
+                handleLogout();
+            }
+        } catch {
+            handleLogout();
+        }
+    }
+}
+
+// Enter 键登录
+document.getElementById('login-password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleLogin();
+});
+
+init();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Database
+*.db
+backend/star_job_helper.db
+
+# Logs
+logs/
+*.log
+
+# Environment
+.env
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Uploads
+uploads/
+backups/
+
+# Temporary
+*.tmp
+*.swp
