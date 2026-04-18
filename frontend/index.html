@@ -1,0 +1,3961 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="description" content="星职助手 - 面向心智障碍群体的职场辅助工具" />
+  <meta name="theme-color" content="#FF6B35" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="星职助手" />
+  <link rel="manifest" href="public/manifest.json" />
+  <title>星职助手</title>
+
+  <!-- Vue3 CDN -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#FF6B35',
+            'primary-dark': '#E55A2B',
+            'primary-light': '#FF8F66',
+            warm: '#FFF9F2',
+            'warm-dark': '#FFF0E0',
+            accent: '#4ECDC4',
+            'accent-dark': '#3DBDB5',
+            success: '#51CF66',
+            warning: '#FFD43B',
+            danger: '#FF6B6B',
+            info: '#74C0FC',
+          },
+          borderRadius: {
+            'card': '16px',
+            'card-lg': '24px',
+          },
+          fontFamily: {
+            sans: ['"PingFang SC"', '"Hiragino Sans GB"', '"Microsoft YaHei"', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* ========== CSS 变量（亮色/深色主题） ========== */
+    :root {
+      --bg-primary: #FFF9F2;
+      --bg-card: #FFFFFF;
+      --bg-card-hover: #FFF0E0;
+      --bg-input: #FFFFFF;
+      --text-primary: #333333;
+      --text-secondary: #666666;
+      --text-muted: #999999;
+      --border-color: #F0F0F0;
+      --shadow-color: rgba(0,0,0,0.08);
+      --header-bg: rgba(255,255,255,0.9);
+      --nav-bg: #FFFFFF;
+      --scrollbar-thumb: #FFD4BC;
+      --ring-bg: #FFE8D6;
+      --danger-bg: rgba(255,107,107,0.1);
+      --accent-bg: rgba(78,205,196,0.1);
+      --success-bg: rgba(81,207,102,0.1);
+      --warm-bg: #FFF9F2;
+      --warm-dark-bg: #FFF0E0;
+      --transition-speed: 0.3s;
+    }
+
+    html.dark {
+      --bg-primary: #1A1A2E;
+      --bg-card: #16213E;
+      --bg-card-hover: #1A2744;
+      --bg-input: #16213E;
+      --text-primary: #E0E0E0;
+      --text-secondary: #B0B0B0;
+      --text-muted: #707070;
+      --border-color: #2A2A4A;
+      --shadow-color: rgba(0,0,0,0.3);
+      --header-bg: rgba(26,26,46,0.9);
+      --nav-bg: #16213E;
+      --scrollbar-thumb: #3A3A5A;
+      --ring-bg: #2A2A4A;
+      --danger-bg: rgba(255,107,107,0.15);
+      --accent-bg: rgba(78,205,196,0.15);
+      --success-bg: rgba(81,207,102,0.15);
+      --warm-bg: #1A1A2E;
+      --warm-dark-bg: #16213E;
+    }
+
+    /* ========== 深色模式过渡 ========== */
+    body, .bg-white, header, nav, .shadow-sm, .shadow-md, .shadow-lg {
+      transition: background-color var(--transition-speed) ease,
+                  color var(--transition-speed) ease,
+                  border-color var(--transition-speed) ease,
+                  box-shadow var(--transition-speed) ease;
+    }
+
+    /* ========== 基础样式 ========== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', system-ui, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* 深色模式下的卡片样式 */
+    html.dark .bg-white,
+    html.dark [class*="bg-white"] {
+      background-color: var(--bg-card) !important;
+    }
+    html.dark .bg-warm {
+      background-color: var(--warm-bg) !important;
+    }
+    html.dark .bg-warm-dark {
+      background-color: var(--warm-dark-bg) !important;
+    }
+    html.dark .text-gray-700,
+    html.dark .text-gray-800 {
+      color: var(--text-primary) !important;
+    }
+    html.dark .text-gray-500,
+    html.dark .text-gray-600 {
+      color: var(--text-secondary) !important;
+    }
+    html.dark .text-gray-400 {
+      color: var(--text-muted) !important;
+    }
+    html.dark .border-gray-100,
+    html.dark .border-gray-200,
+    html.dark .border-gray-50 {
+      border-color: var(--border-color) !important;
+    }
+    html.dark .bg-gray-100,
+    html.dark .bg-gray-200 {
+      background-color: var(--border-color) !important;
+    }
+    html.dark .shadow-sm {
+      box-shadow: 0 1px 3px var(--shadow-color) !important;
+    }
+    html.dark .shadow-md {
+      box-shadow: 0 4px 12px var(--shadow-color) !important;
+    }
+    html.dark .shadow-lg {
+      box-shadow: 0 8px 24px var(--shadow-color) !important;
+    }
+    html.dark header {
+      background: var(--header-bg) !important;
+    }
+    html.dark nav {
+      background: var(--nav-bg) !important;
+      border-color: var(--border-color) !important;
+    }
+    html.dark input[type="text"],
+    html.dark input[type="tel"],
+    html.dark input[type="password"],
+    html.dark input[type="range"] {
+      background-color: var(--bg-input);
+      color: var(--text-primary);
+      border-color: var(--border-color);
+    }
+    html.dark .bg-danger\/10 {
+      background-color: var(--danger-bg) !important;
+    }
+    html.dark .bg-accent\/10 {
+      background-color: var(--accent-bg) !important;
+    }
+    html.dark .bg-success\/10 {
+      background-color: var(--success-bg) !important;
+    }
+    html.dark .hover\:bg-warm:hover {
+      background-color: var(--warm-dark-bg) !important;
+    }
+    html.dark .hover\:bg-gray-200:hover {
+      background-color: var(--border-color) !important;
+    }
+    html.dark .hover\:bg-gray-300:hover {
+      background-color: var(--border-color) !important;
+    }
+
+    /* 屏幕闪烁动画（休息提醒） */
+    @keyframes screenFlash {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 0.3; }
+    }
+    .screen-flash-overlay {
+      position: fixed;
+      inset: 0;
+      background: #4ECDC4;
+      z-index: 9998;
+      pointer-events: none;
+      animation: screenFlash 0.5s ease-in-out 3;
+    }
+
+    /* 语音录制动画 */
+    @keyframes recordingPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.4); }
+      50% { transform: scale(1.05); box-shadow: 0 0 0 12px rgba(255, 107, 53, 0); }
+    }
+    .recording-pulse {
+      animation: recordingPulse 1.5s ease-in-out infinite;
+    }
+
+    /* ========== 无障碍焦点样式 ========== */
+    :focus-visible {
+      outline: 3px solid #FF6B35;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    /* ========== 动画（尊重 prefers-reduced-motion） ========== */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ========== 页面切换动画 ========== */
+    .page-enter-active { animation: pageIn 0.3s ease-out; }
+    .page-leave-active { animation: pageOut 0.2s ease-in; }
+    @keyframes pageIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pageOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-12px); }
+    }
+
+    /* ========== 庆祝动画 ========== */
+    .celebration-enter-active { animation: celebration 0.8s ease-out; }
+    @keyframes celebration {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ========== 星星飘落动画 ========== */
+    @keyframes starFall {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(80px) rotate(360deg); opacity: 0; }
+    }
+    .star-particle {
+      position: absolute;
+      animation: starFall 1.2s ease-out forwards;
+      pointer-events: none;
+      font-size: 24px;
+    }
+
+    /* ========== 脉冲动画 ========== */
+    @keyframes pulse-soft {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+
+    /* ========== 环形进度条 ========== */
+    .timer-ring {
+      transform: rotate(-90deg);
+    }
+    .timer-ring circle {
+      transition: stroke-dashoffset 1s linear;
+    }
+
+    /* ========== 滚动条美化 ========== */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #FFD4BC; border-radius: 3px; }
+
+    /* ========== Toast 通知 ========== */
+    .toast-enter-active { animation: toastIn 0.3s ease-out; }
+    .toast-leave-active { animation: toastOut 0.3s ease-in; }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-20px); }
+    }
+
+    /* ========== 情绪卡片悬浮 ========== */
+    .mood-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .mood-card:hover, .mood-card:focus-within {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(255, 107, 53, 0.15);
+    }
+
+    /* ========== 底部导航 ========== */
+    .nav-item {
+      transition: color 0.2s ease, transform 0.15s ease;
+    }
+    .nav-item:active {
+      transform: scale(0.92);
+    }
+    .nav-item.active {
+      color: #FF6B35;
+    }
+
+    /* ========== 加载动画 ========== */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 4px solid #FFD4BC;
+      border-top-color: #FF6B35;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    /* ========== 成就徽章 ========== */
+    .badge-locked { filter: grayscale(1) opacity(0.4); }
+    .badge-unlocked {
+      animation: badgeGlow 2s ease-in-out infinite;
+    }
+    @keyframes badgeGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.3); }
+      50% { box-shadow: 0 0 16px 4px rgba(255, 107, 53, 0.2); }
+    }
+
+    /* ========== 求助按钮脉冲 ========== */
+    @keyframes sos-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.5); }
+      50% { box-shadow: 0 0 0 12px rgba(255, 107, 107, 0); }
+    }
+    .sos-pulse { animation: sos-pulse 1.5s ease-in-out infinite; }
+
+    /* ========== 沟通语句按钮 ========== */
+    .speech-btn {
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+    .speech-btn:active {
+      transform: scale(0.95);
+    }
+    .speech-btn.speaking {
+      background-color: #FF6B35 !important;
+      color: white !important;
+    }
+
+    /* ========== 白噪音声波动画 ========== */
+    @keyframes soundWave {
+      0%, 100% { height: 8px; }
+      50% { height: var(--wave-height, 24px); }
+    }
+    .sound-wave-bar {
+      width: 4px;
+      border-radius: 2px;
+      background: #4ECDC4;
+      animation: soundWave var(--wave-duration, 0.8s) ease-in-out infinite;
+      animation-delay: var(--wave-delay, 0s);
+    }
+    .sound-wave-bar.paused {
+      animation-play-state: paused;
+      height: 8px !important;
+    }
+
+    /* ========== 呼吸引导动画 ========== */
+    @keyframes breatheIn {
+      from { transform: scale(0.6); }
+      to { transform: scale(1); }
+    }
+    @keyframes breatheOut {
+      from { transform: scale(1); }
+      to { transform: scale(0.6); }
+    }
+    @keyframes breatheHold {
+      0%, 100% { transform: scale(1); }
+    }
+    .breath-circle {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(78,205,196,0.3) 0%, rgba(78,205,196,0.1) 60%, transparent 70%);
+      border: 3px solid #4ECDC4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 1s ease-in-out;
+    }
+    .breath-circle.inhale {
+      animation: breatheIn 4s ease-in-out forwards;
+    }
+    .breath-circle.hold {
+      animation: breatheHold 7s ease-in-out forwards;
+    }
+    .breath-circle.exhale {
+      animation: breatheOut 8s ease-in-out forwards;
+    }
+
+    /* ========== 日历样式 ========== */
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+    .calendar-day {
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 500;
+      position: relative;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .calendar-day:hover {
+      background-color: var(--bg-card-hover, #FFF0E0);
+    }
+    .calendar-day.today {
+      background-color: rgba(255,107,53,0.15);
+      font-weight: bold;
+      color: #FF6B35;
+    }
+    .calendar-day.other-month {
+      opacity: 0.3;
+    }
+    .calendar-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      position: absolute;
+      bottom: 4px;
+    }
+    .calendar-dot.task { background-color: #51CF66; }
+    .calendar-dot.mood { background-color: #FFD43B; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- ==================== 全局 Toast 通知 ==================== -->
+    <div class="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2"
+         role="alert" aria-live="polite">
+      <transition-group name="toast">
+        <div v-for="t in toasts" :key="t.id"
+             class="px-6 py-3 rounded-card-lg shadow-lg text-white font-medium text-lg min-w-[200px] text-center"
+             :class="{
+               'bg-success': t.type === 'success',
+               'bg-danger': t.type === 'error',
+               'bg-warning text-gray-800': t.type === 'warning',
+               'bg-info': t.type === 'info',
+             }">
+          {{ t.message }}
+        </div>
+      </transition-group>
+    </div>
+
+    <!-- ==================== 登录/注册页 ==================== -->
+    <div v-if="currentPage === 'auth'" class="min-h-screen flex items-center justify-center p-4"
+         role="main" aria-label="登录注册">
+      <div class="w-full max-w-md">
+        <!-- Logo -->
+        <div class="text-center mb-8">
+          <div class="text-7xl mb-4 pulse-soft" aria-hidden="true">⭐</div>
+          <h1 class="text-4xl font-bold text-primary">星职助手</h1>
+          <p class="text-gray-500 mt-2 text-lg">你的职场好伙伴</p>
+        </div>
+
+        <!-- 登录/注册切换 -->
+        <div class="bg-white rounded-card-lg shadow-md p-8">
+          <div class="flex rounded-xl bg-warm p-1 mb-6" role="tablist">
+            <button role="tab" :aria-selected="authMode === 'login'"
+                    class="flex-1 py-3 rounded-xl text-lg font-bold transition-all"
+                    :class="authMode === 'login' ? 'bg-primary text-white shadow' : 'text-gray-500'"
+                    @click="authMode = 'login'">登录</button>
+            <button role="tab" :aria-selected="authMode === 'register'"
+                    class="flex-1 py-3 rounded-xl text-lg font-bold transition-all"
+                    :class="authMode === 'register' ? 'bg-primary text-white shadow' : 'text-gray-500'"
+                    @click="authMode = 'register'">注册</button>
+          </div>
+
+          <form @submit.prevent="handleAuth" class="space-y-5">
+            <div v-if="authMode === 'register'">
+              <label class="block text-lg font-medium text-gray-700 mb-2" for="auth-name">
+                👤 你的名字
+              </label>
+              <input id="auth-name" v-model="authForm.name" type="text" required
+                     class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 text-xl focus:border-primary focus:ring-0 outline-none transition-colors"
+                     placeholder="请输入你的名字" autocomplete="name" />
+            </div>
+            <div>
+              <label class="block text-lg font-medium text-gray-700 mb-2" for="auth-phone">
+                📱 手机号码
+              </label>
+              <input id="auth-phone" v-model="authForm.phone" type="tel" required
+                     class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 text-xl focus:border-primary focus:ring-0 outline-none transition-colors"
+                     placeholder="请输入11位手机号" maxlength="11" autocomplete="tel" />
+            </div>
+            <div>
+              <label class="block text-lg font-medium text-gray-700 mb-2" for="auth-password">
+                🔒 密码
+              </label>
+              <input id="auth-password" v-model="authForm.password" type="password" required
+                     class="w-full px-5 py-4 rounded-xl border-2 border-gray-200 text-xl focus:border-primary focus:ring-0 outline-none transition-colors"
+                     placeholder="请输入密码（至少6位）" minlength="6" autocomplete="current-password" />
+            </div>
+            <button type="submit" :disabled="authLoading"
+                    class="w-full py-4 bg-primary hover:bg-primary-dark text-white text-xl font-bold rounded-xl shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="提交">
+              <span v-if="authLoading" class="spinner inline-block w-6 h-6 border-2 border-white border-t-transparent rounded-full mr-2" style="vertical-align: middle;"></span>
+              {{ authMode === 'login' ? '登 录' : '注 册' }}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 主应用布局 ==================== -->
+    <div v-else class="min-h-screen flex flex-col pb-24" role="main">
+      <!-- 顶部导航栏 -->
+      <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm px-4 py-3 flex items-center justify-between"
+              role="banner">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl" aria-hidden="true">⭐</span>
+          <h1 class="text-xl font-bold text-primary">星职助手</h1>
+        </div>
+        <div class="flex items-center gap-2">
+          <button @click="speak('你好，我是星职助手，有什么可以帮你的吗？')"
+                  class="w-11 h-11 flex items-center justify-center rounded-full bg-warm hover:bg-warm-dark transition-colors"
+                  aria-label="语音提示">
+            🔊
+          </button>
+          <button @click="currentPage = 'profile'"
+                  class="w-11 h-11 flex items-center justify-center rounded-full bg-warm hover:bg-warm-dark transition-colors"
+                  aria-label="个人中心">
+            👤
+          </button>
+        </div>
+      </header>
+
+      <!-- ==================== 页面内容区域 ==================== -->
+      <main class="flex-1 px-4 py-4 max-w-2xl mx-auto w-full">
+
+        <!-- ========== 首页仪表盘 ========== -->
+        <section v-if="currentPage === 'home'" aria-label="首页">
+          <!-- 问候语 -->
+          <div class="bg-gradient-to-br from-primary to-primary-light rounded-card-lg p-6 text-white mb-6 shadow-lg">
+            <h2 class="text-2xl font-bold mb-2">{{ greetingText }}，{{ userName }}！</h2>
+            <p class="text-lg opacity-90">{{ greetingSubText }}</p>
+            <!-- 天气信息 -->
+            <div v-if="weatherInfo" class="mt-3 flex items-center gap-3 bg-white/20 rounded-xl px-4 py-2">
+              <span class="text-2xl">{{ weatherInfo.icon }}</span>
+              <div>
+                <span class="font-bold">{{ weatherInfo.temp }}°C</span>
+                <span class="ml-2 opacity-90">{{ weatherInfo.desc }}</span>
+                <span class="ml-2 opacity-75 text-sm">{{ weatherInfo.humidity }}</span>
+              </div>
+            </div>
+            <p v-if="weatherTip" class="mt-2 text-sm opacity-80">{{ weatherTip }}</p>
+          </div>
+
+          <!-- 今日统计 -->
+          <div class="grid grid-cols-3 gap-3 mb-6">
+            <div class="bg-white rounded-card p-4 text-center shadow-sm">
+              <div class="text-3xl mb-1" aria-hidden="true">✅</div>
+              <div class="text-2xl font-bold text-primary">{{ dashboardData.today.tasks_completed }}</div>
+              <div class="text-sm text-gray-500">今日任务</div>
+            </div>
+            <div class="bg-white rounded-card p-4 text-center shadow-sm">
+              <div class="text-3xl mb-1" aria-hidden="true">😊</div>
+              <div class="text-2xl font-bold text-accent">{{ dashboardData.today.moods_logged }}</div>
+              <div class="text-sm text-gray-500">今日心情</div>
+            </div>
+            <div class="bg-white rounded-card p-4 text-center shadow-sm">
+              <div class="text-3xl mb-1" aria-hidden="true">⭐</div>
+              <div class="text-2xl font-bold text-warning">{{ dashboardData.today.stars_earned }}</div>
+              <div class="text-sm text-gray-500">今日星星</div>
+            </div>
+          </div>
+
+          <!-- 本周趋势 -->
+          <div v-if="dashboardData.weekly_trend.length > 0" class="bg-white rounded-card p-5 mb-6 shadow-sm">
+            <h3 class="text-lg font-bold mb-4">📊 本周趋势</h3>
+            <div class="flex items-end justify-between gap-2 h-32">
+              <div v-for="day in dashboardData.weekly_trend" :key="day.date"
+                   class="flex-1 flex flex-col items-center gap-1">
+                <div class="w-full bg-primary/20 rounded-t-lg relative"
+                     :style="{ height: Math.max(8, (day.tasks_completed / Math.max(...dashboardData.weekly_trend.map(d=>d.tasks_completed), 1)) * 80) + 'px' }">
+                  <div class="absolute inset-0 bg-primary rounded-t-lg"></div>
+                </div>
+                <span class="text-xs text-gray-400">{{ formatWeekDay(day.date) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 打卡签到 -->
+          <div class="bg-white rounded-card-lg p-6 mb-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-bold">{{ t('checkin_title') }}</h3>
+              <span class="text-sm text-gray-500">{{ t('checkin_streak', [checkinStreak]) }}</span>
+            </div>
+            <button @click="doCheckin"
+                    :disabled="todayCheckedIn"
+                    class="w-full py-5 rounded-xl text-xl font-bold transition-all active:scale-[0.97] flex items-center justify-center gap-3"
+                    :class="todayCheckedIn
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-warning to-yellow-300 text-gray-800 shadow-lg hover:shadow-xl'"
+                    :aria-label="todayCheckedIn ? t('checkin_done') : t('checkin_btn')">
+              <span class="text-3xl">{{ todayCheckedIn ? '✅' : '⭐' }}</span>
+              <span>{{ todayCheckedIn ? t('checkin_done') : t('checkin_btn') }}</span>
+            </button>
+          </div>
+
+          <!-- 快捷入口 -->
+          <h3 class="text-lg font-bold mb-4">{{ t('quick_entries') }}</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <button v-for="entry in quickEntries" :key="entry.page"
+                    @click="navigateTo(entry.page)"
+                    class="bg-white rounded-card-lg p-5 shadow-sm flex flex-col items-center gap-3 hover:shadow-md transition-all active:scale-[0.97]"
+                    :aria-label="entry.label">
+              <span class="text-5xl" aria-hidden="true">{{ entry.icon }}</span>
+              <span class="text-lg font-bold text-gray-700">{{ entry.label }}</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- ========== 心情模块 ========== -->
+        <section v-if="currentPage === 'mood'" aria-label="心情记录">
+          <h2 class="text-2xl font-bold mb-6">😊 今天心情怎么样？</h2>
+
+          <!-- 6种情绪卡片 -->
+          <div class="grid grid-cols-3 gap-4 mb-6">
+            <button v-for="m in moodTypes" :key="m.type"
+                    @click="recordMood(m.type)"
+                    class="mood-card bg-white rounded-card-lg p-5 shadow-sm flex flex-col items-center gap-2 cursor-pointer"
+                    :class="{ 'ring-4 ring-primary': selectedMood === m.type }"
+                    :aria-label="'记录心情：' + m.label">
+              <span class="text-5xl" aria-hidden="true">{{ m.emoji }}</span>
+              <span class="text-lg font-bold" :style="{ color: m.color }">{{ m.label }}</span>
+            </button>
+          </div>
+
+          <!-- 反馈建议 -->
+          <div v-if="moodFeedback.length > 0" class="bg-white rounded-card-lg p-6 mb-6 shadow-sm">
+            <h3 class="text-lg font-bold mb-4">💡 小建议</h3>
+            <div v-for="(tip, i) in moodFeedback" :key="i"
+                 class="flex items-start gap-3 py-3"
+                 :class="{ 'border-t border-gray-100': i > 0 }">
+              <span class="text-xl mt-0.5" aria-hidden="true">📌</span>
+              <p class="text-lg text-gray-700 leading-relaxed">{{ tip }}</p>
+            </div>
+          </div>
+
+          <!-- 心情历史 -->
+          <div class="bg-white rounded-card-lg p-6 shadow-sm">
+            <h3 class="text-lg font-bold mb-4">{{ t('mood_history_title') }}</h3>
+            <div v-if="moodHistory.length === 0" class="text-center text-gray-400 py-8">
+              <p class="text-4xl mb-3" aria-hidden="true">📝</p>
+              <p class="text-lg">{{ t('mood_history_empty') }}</p>
+            </div>
+            <div v-else class="space-y-3">
+              <div v-for="record in moodHistory" :key="record.id"
+                   class="flex items-center gap-4 p-3 rounded-xl bg-warm">
+                <span class="text-3xl" aria-hidden="true">{{ getMoodEmoji(record.mood_type) }}</span>
+                <div class="flex-1">
+                  <span class="font-medium text-gray-700">{{ getMoodLabel(record.mood_type) }}</span>
+                </div>
+                <span class="text-sm text-gray-400">{{ formatTime(record.created_at) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 情绪趋势图表 -->
+          <div class="bg-white rounded-card-lg p-6 mt-4 shadow-sm">
+            <h3 class="text-lg font-bold mb-4">{{ t('mood_trend_title') }}</h3>
+            <div v-if="moodTrendData.length === 0" class="text-center text-gray-400 py-8">
+              <p class="text-4xl mb-3" aria-hidden="true">📈</p>
+              <p class="text-lg">{{ t('mood_trend_empty') }}</p>
+            </div>
+            <div v-else style="position:relative; height:220px;">
+              <canvas ref="moodChartCanvas"></canvas>
+            </div>
+          </div>
+
+          <!-- 语音日记 -->
+          <div class="bg-white rounded-card-lg p-6 mt-4 shadow-sm">
+            <h3 class="text-lg font-bold mb-4">{{ t('voice_diary_title') }}</h3>
+            <div class="flex gap-3 mb-4">
+              <button v-if="!isRecording"
+                      @click="startVoiceRecording"
+                      class="flex-1 py-4 bg-accent hover:bg-accent-dark text-white text-lg font-bold rounded-xl shadow-lg transition-all active:scale-[0.97] flex items-center justify-center gap-2"
+                      aria-label="开始录音">
+                🎙️ {{ t('voice_record_start') }}
+              </button>
+              <button v-else
+                      @click="stopVoiceRecording"
+                      class="flex-1 py-4 bg-danger text-white text-lg font-bold rounded-xl shadow-lg transition-all active:scale-[0.97] flex items-center justify-center gap-2 recording-pulse"
+                      aria-label="停止录音">
+                ⏹️ {{ t('voice_record_stop') }} {{ recordingTimeDisplay }}
+              </button>
+            </div>
+            <!-- 最近语音日记 -->
+            <div v-if="voiceDiaries.length > 0" class="space-y-3">
+              <div v-for="(diary, idx) in voiceDiaries" :key="idx"
+                   class="flex items-center gap-3 p-3 rounded-xl bg-warm">
+                <button @click="playVoiceDiary(diary)"
+                        class="w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center flex-shrink-0"
+                        :aria-label="t('voice_play')">
+                  {{ playingDiaryIdx === idx ? '⏸️' : '▶️' }}
+                </button>
+                <div class="flex-1">
+                  <div class="text-sm font-medium text-gray-700">{{ t('voice_diary_item') }}</div>
+                  <div class="text-xs text-gray-400">{{ formatTime(diary.created_at) }} · {{ diary.duration }}s</div>
+                </div>
+                <button @click="deleteVoiceDiary(idx)"
+                        class="text-gray-400 hover:text-danger transition-colors"
+                        aria-label="删除">
+                  🗑️
+                </button>
+              </div>
+            </div>
+            <div v-else class="text-center text-gray-400 py-4">
+              <p class="text-sm">{{ t('voice_diary_empty') }}</p>
+            </div>
+          </div>
+
+          <!-- 图片日记 -->
+          <div class="bg-white rounded-card-lg p-6 mt-4 shadow-sm">
+            <h3 class="text-lg font-bold mb-4">{{ t('photo_diary_title') }}</h3>
+            <input type="file" ref="photoInput" accept="image/*" capture="environment"
+                   @change="handlePhotoCapture" class="hidden" />
+            <button @click="$refs.photoInput.click()"
+                    class="w-full py-4 bg-primary hover:bg-primary-dark text-white text-lg font-bold rounded-xl shadow-lg transition-all active:scale-[0.97] flex items-center justify-center gap-2 mb-4"
+                    aria-label="拍照">
+              📷 {{ t('photo_capture_btn') }}
+            </button>
+            <!-- 最近图片日记 -->
+            <div v-if="photoDiaries.length > 0" class="grid grid-cols-3 gap-3">
+              <div v-for="(photo, idx) in photoDiaries" :key="idx"
+                   class="relative group rounded-xl overflow-hidden aspect-square">
+                <img :src="photo.data" class="w-full h-full object-cover" :alt="t('photo_diary_item')" />
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <button @click="deletePhotoDiary(idx)"
+                          class="w-8 h-8 rounded-full bg-danger text-white flex items-center justify-center text-sm"
+                          aria-label="删除">
+                    ✕
+                  </button>
+                </div>
+                <div class="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 text-center">
+                  {{ formatTime(photo.created_at) }}
+                </div>
+              </div>
+            </div>
+            <div v-else class="text-center text-gray-400 py-4">
+              <p class="text-sm">{{ t('photo_diary_empty') }}</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== 任务模块 ========== -->
+        <section v-if="currentPage === 'task'" aria-label="任务中心">
+          <!-- 任务模板选择 -->
+          <div v-if="!currentTask">
+            <h2 class="text-2xl font-bold mb-2">📋 选择一个任务</h2>
+            <p class="text-gray-500 mb-6 text-lg">点击任务卡片开始工作</p>
+
+            <div v-if="taskTemplates.length === 0" class="text-center text-gray-400 py-12">
+              <p class="text-5xl mb-4" aria-hidden="true">📋</p>
+              <p class="text-lg">暂无可用任务模板</p>
+            </div>
+
+            <div v-else class="grid grid-cols-1 gap-4">
+              <button v-for="tpl in taskTemplates" :key="tpl.id"
+                      @click="startTask(tpl)"
+                      class="bg-white rounded-card-lg p-5 shadow-sm text-left hover:shadow-md transition-all active:scale-[0.98] flex items-center gap-4"
+                      :aria-label="'开始任务：' + tpl.name">
+                <span class="text-5xl" aria-hidden="true">{{ tpl.icon || '📋' }}</span>
+                <div class="flex-1">
+                  <h3 class="text-xl font-bold text-gray-800">{{ tpl.name }}</h3>
+                  <p class="text-gray-500 mt-1">{{ tpl.steps.length }} 个步骤</p>
+                </div>
+                <span class="text-2xl text-primary" aria-hidden="true">▶</span>
+              </button>
+            </div>
+
+            <!-- 我的任务列表 -->
+            <div v-if="myTasks.length > 0" class="mt-8">
+              <h3 class="text-xl font-bold mb-4">📝 进行中的任务</h3>
+              <div class="space-y-3">
+                <div v-for="task in myTasks.filter(t => t.status !== 'completed')" :key="task.id"
+                     @click="resumeTask(task)"
+                     class="bg-white rounded-card p-4 shadow-sm flex items-center gap-4 cursor-pointer hover:shadow-md transition-all"
+                     role="button" tabindex="0"
+                     :aria-label="'继续任务：' + (task.template?.name || '未命名')">
+                  <span class="text-3xl" aria-hidden="true">{{ task.template?.icon || '📋' }}</span>
+                  <div class="flex-1">
+                    <h4 class="font-bold text-gray-800">{{ task.template?.name || '未命名任务' }}</h4>
+                    <div class="w-full bg-gray-200 rounded-full h-3 mt-2">
+                      <div class="bg-primary rounded-full h-3 transition-all"
+                           :style="{ width: getTaskProgress(task) + '%' }"></div>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">{{ getTaskProgress(task) }}% 完成</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 任务执行界面 -->
+          <div v-else>
+            <div class="flex items-center gap-3 mb-6">
+              <button @click="currentTask = null; showCelebration = false"
+                      class="w-11 h-11 flex items-center justify-center rounded-full bg-warm hover:bg-warm-dark transition-colors"
+                      aria-label="返回任务列表">
+                ←
+              </button>
+              <h2 class="text-2xl font-bold flex-1">{{ currentTask.template?.name || '任务' }}</h2>
+            </div>
+
+            <!-- 进度条 -->
+            <div class="bg-white rounded-card p-5 mb-6 shadow-sm">
+              <div class="flex justify-between items-center mb-3">
+                <span class="text-lg font-bold">任务进度</span>
+                <span class="text-lg font-bold text-primary">{{ getTaskProgress(currentTask) }}%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-5">
+                <div class="bg-gradient-to-r from-primary to-primary-light rounded-full h-5 transition-all duration-500"
+                     :style="{ width: getTaskProgress(currentTask) + '%' }"></div>
+              </div>
+              <p class="text-gray-500 mt-2">
+                已完成 {{ currentTask.completed_steps?.length || 0 }} / {{ currentTask.template?.steps?.length || 0 }} 步
+              </p>
+            </div>
+
+            <!-- 步骤列表 -->
+            <div class="space-y-3 mb-6">
+              <div v-for="(step, idx) in currentTask.template?.steps" :key="idx"
+                   class="bg-white rounded-card p-5 shadow-sm flex items-center gap-4 transition-all"
+                   :class="{ 'opacity-60': currentTask.completed_steps?.includes(idx) }">
+                <button @click="toggleTaskStep(idx)"
+                        class="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold transition-all flex-shrink-0"
+                        :class="currentTask.completed_steps?.includes(idx)
+                          ? 'bg-success text-white'
+                          : 'bg-warm text-gray-500 hover:bg-primary hover:text-white'"
+                        :aria-label="(currentTask.completed_steps?.includes(idx) ? '取消完成' : '完成') + '步骤' + (idx+1)">
+                  {{ currentTask.completed_steps?.includes(idx) ? '✓' : idx + 1 }}
+                </button>
+                <span class="text-lg"
+                      :class="{ 'line-through text-gray-400': currentTask.completed_steps?.includes(idx) }">
+                  {{ step }}
+                </span>
+              </div>
+            </div>
+
+            <!-- 语音播报步骤按钮 -->
+            <button @click="speakCurrentStep()"
+                    class="w-full py-4 bg-accent hover:bg-accent-dark text-white text-xl font-bold rounded-xl shadow-lg transition-all active:scale-[0.98]"
+                    aria-label="语音播报当前步骤">
+              🔊 语音播报当前步骤
+            </button>
+          </div>
+
+          <!-- 庆祝动画 -->
+          <div v-if="showCelebration" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40"
+               @click="showCelebration = false" role="dialog" aria-label="任务完成庆祝">
+            <div class="celebration-enter-active bg-white rounded-card-lg p-10 text-center max-w-sm mx-4 relative">
+              <!-- 星星粒子 -->
+              <div v-for="i in 12" :key="i"
+                   class="star-particle"
+                   :style="{ left: (Math.random() * 200 + 50) + 'px', top: (Math.random() * 100 + 20) + 'px', animationDelay: (Math.random() * 0.5) + 's' }"
+                   aria-hidden="true">⭐</div>
+              <div class="text-8xl mb-4" aria-hidden="true">🎉</div>
+              <h2 class="text-3xl font-bold text-primary mb-3">太棒了！</h2>
+              <p class="text-xl text-gray-600 mb-6">你完成了这个任务！</p>
+              <button @click.stop="showCelebration = false; currentTask = null"
+                      class="px-8 py-3 bg-primary text-white text-xl font-bold rounded-xl shadow-lg"
+                      aria-label="继续">
+                继续加油 ⭐
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== 沟通模块 ========== -->
+        <section v-if="currentPage === 'communication'" aria-label="沟通助手">
+          <h2 class="text-2xl font-bold mb-2">💬 沟通助手</h2>
+          <p class="text-gray-500 mb-6 text-lg">点击语句，我会帮你读出来</p>
+
+          <!-- 分类标签 -->
+          <div class="flex gap-2 mb-6 overflow-x-auto pb-2" role="tablist">
+            <button v-for="cat in speechCategories" :key="cat.key"
+                    role="tab" :aria-selected="selectedSpeechCat === cat.key"
+                    @click="selectedSpeechCat = cat.key"
+                    class="px-5 py-2.5 rounded-full text-base font-bold whitespace-nowrap transition-all"
+                    :class="selectedSpeechCat === cat.key
+                      ? 'bg-primary text-white shadow'
+                      : 'bg-white text-gray-500 hover:bg-warm'">
+              {{ cat.icon }} {{ cat.label }}
+            </button>
+          </div>
+
+          <!-- 语句列表 -->
+          <div class="grid grid-cols-1 gap-3">
+            <div v-for="(s, i) in filteredSpeeches" :key="i"
+                 class="speech-btn bg-white rounded-card p-5 shadow-sm flex items-center gap-4 hover:shadow-md transition-all"
+                 :class="{ 'speaking': speakingText === s }">
+              <button @click="speakSpeech(s)"
+                      class="flex-1 text-left flex items-center gap-4"
+                      :aria-label="'播报：' + s">
+                <span class="text-2xl flex-shrink-0" aria-hidden="true">🔊</span>
+                <span class="text-xl text-gray-700">{{ s }}</span>
+              </button>
+              <button @click="copyToClipboard(s)"
+                      class="w-10 h-10 rounded-full bg-warm hover:bg-warm-dark flex items-center justify-center flex-shrink-0 transition-colors"
+                      :aria-label="t('copy_text')">
+                📋
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== 计时器模块 ========== -->
+        <section v-if="currentPage === 'timer'" aria-label="专注计时器">
+          <h2 class="text-2xl font-bold mb-2">⏱️ 专注计时器</h2>
+          <p class="text-gray-500 mb-6 text-lg">设定时间，专注工作</p>
+
+          <!-- 预设时间选择 -->
+          <div v-if="!timerRunning" class="grid grid-cols-3 gap-4 mb-8">
+            <button v-for="preset in timerPresets" :key="preset.minutes"
+                    @click="setTimer(preset.minutes)"
+                    class="bg-white rounded-card-lg p-5 shadow-sm flex flex-col items-center gap-2 hover:shadow-md transition-all active:scale-[0.97]"
+                    :class="{ 'ring-4 ring-primary': timerMinutes === preset.minutes }"
+                    :aria-label="'设置' + preset.minutes + '分钟'">
+              <span class="text-3xl" aria-hidden="true">{{ preset.icon }}</span>
+              <span class="text-xl font-bold text-gray-700">{{ preset.label }}</span>
+            </button>
+          </div>
+
+          <!-- 环形进度条 -->
+          <div class="flex justify-center mb-8">
+            <div class="relative" style="width: 260px; height: 260px;">
+              <svg class="timer-ring" width="260" height="260" viewBox="0 0 260 260">
+                <!-- 背景环 -->
+                <circle cx="130" cy="130" r="115" fill="none" stroke="#FFE8D6" stroke-width="16" />
+                <!-- 进度环 -->
+                <circle cx="130" cy="130" r="115" fill="none" stroke="#FF6B35" stroke-width="16"
+                        stroke-linecap="round"
+                        :stroke-dasharray="circumference"
+                        :stroke-dashoffset="timerProgressOffset" />
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <div class="text-5xl font-bold text-primary" aria-live="polite">
+                  {{ timerDisplay }}
+                </div>
+                <div class="text-lg text-gray-500 mt-1">
+                  {{ timerRunning ? '专注中...' : (timerFinished ? '时间到！' : '准备开始') }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 控制按钮 -->
+          <div class="flex justify-center gap-4">
+            <button v-if="!timerRunning && !timerFinished"
+                    @click="startTimer"
+                    class="px-10 py-4 bg-primary hover:bg-primary-dark text-white text-xl font-bold rounded-xl shadow-lg transition-all active:scale-[0.98]"
+                    aria-label="开始计时">
+              ▶ 开始
+            </button>
+            <button v-if="timerRunning"
+                    @click="pauseTimer"
+                    class="px-10 py-4 bg-warning hover:bg-yellow-400 text-gray-800 text-xl font-bold rounded-xl shadow-lg transition-all active:scale-[0.98]"
+                    aria-label="暂停计时">
+              ⏸ 暂停
+            </button>
+            <button v-if="timerRunning || timerFinished"
+                    @click="resetTimer"
+                    class="px-10 py-4 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xl font-bold rounded-xl shadow-lg transition-all active:scale-[0.98]"
+                    aria-label="重置计时">
+              🔄 重置
+            </button>
+          </div>
+
+          <!-- 计时完成提示 -->
+          <div v-if="timerFinished" class="mt-6 bg-success/10 rounded-card-lg p-6 text-center">
+            <div class="text-5xl mb-3" aria-hidden="true">🎉</div>
+            <p class="text-xl font-bold text-success">{{ t('timer_complete', [timerMinutes]) }}</p>
+          </div>
+
+          <!-- 休息提醒设置 -->
+          <div class="bg-white rounded-card-lg p-6 mt-6 shadow-sm">
+            <h3 class="text-lg font-bold mb-4">{{ t('break_reminder_title') }}</h3>
+            <div class="flex items-center justify-between py-3">
+              <div>
+                <span class="text-lg">{{ t('break_reminder_enable') }}</span>
+                <p class="text-sm text-gray-500">{{ t('break_reminder_desc') }}</p>
+              </div>
+              <button @click="settings.breakReminder = !settings.breakReminder; saveSettings()"
+                      class="relative w-16 h-9 rounded-full transition-colors"
+                      :class="settings.breakReminder ? 'bg-primary' : 'bg-gray-300'"
+                      role="switch" :aria-checked="settings.breakReminder" aria-label="休息提醒开关">
+                <span class="absolute top-1 w-7 h-7 bg-white rounded-full shadow transition-transform"
+                      :class="settings.breakReminder ? 'left-8' : 'left-1'"></span>
+              </button>
+            </div>
+            <div v-if="isBreakTime" class="mt-4 bg-accent/10 rounded-xl p-4 text-center">
+              <div class="text-4xl mb-2" aria-hidden="true">☕</div>
+              <p class="text-lg font-bold text-accent-dark">{{ t('break_time_msg') }}</p>
+              <p class="text-sm text-gray-500 mt-1">{{ t('break_countdown', [breakCountdown]) }}</p>
+            </div>
+          </div>
+
+          <!-- 屏幕闪烁遮罩 -->
+          <div v-if="showScreenFlash" class="screen-flash-overlay"></div>
+        </section>
+
+        <!-- ========== 成就模块 ========== -->
+        <section v-if="currentPage === 'achievement'" aria-label="我的成就">
+          <h2 class="text-2xl font-bold mb-2">🏆 我的成就</h2>
+          <p class="text-gray-500 mb-4 text-lg">收集星星，解锁徽章</p>
+
+          <!-- 星星积分 -->
+          <div class="bg-gradient-to-br from-warning to-yellow-300 rounded-card-lg p-6 mb-6 text-center shadow-lg">
+            <div class="text-5xl mb-2" aria-hidden="true">⭐</div>
+            <div class="text-4xl font-bold text-gray-800">{{ totalStars }}</div>
+            <div class="text-lg text-gray-700">星星积分</div>
+          </div>
+
+          <!-- 徽章网格 -->
+          <div class="grid grid-cols-3 gap-4">
+            <div v-for="badge in allBadges" :key="badge.id"
+                 class="bg-white rounded-card-lg p-4 shadow-sm flex flex-col items-center text-center"
+                 :class="badge.unlocked ? 'badge-unlocked' : 'badge-locked'"
+                 :aria-label="badge.name + (badge.unlocked ? '，已解锁' : '，未解锁')">
+              <div class="text-5xl mb-2" aria-hidden="true">{{ badge.emoji }}</div>
+              <div class="text-base font-bold text-gray-800">{{ badge.name }}</div>
+              <div class="text-xs text-gray-500 mt-1">{{ badge.description }}</div>
+              <div v-if="badge.unlocked" class="mt-2 text-xs text-primary font-bold">已解锁 ✓</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== 求助模块 ========== -->
+        <section v-if="currentPage === 'help'" aria-label="求助中心">
+          <h2 class="text-2xl font-bold mb-2">🆘 求助中心</h2>
+          <p class="text-gray-500 mb-6 text-lg">遇到困难时，不要害怕求助</p>
+
+          <!-- 一键求助按钮 -->
+          <div class="text-center mb-8">
+            <button @click="triggerSOS"
+                    class="w-48 h-48 rounded-full bg-danger text-white text-3xl font-bold shadow-2xl sos-pulse transition-all active:scale-95 flex flex-col items-center justify-center mx-auto"
+                    aria-label="一键求助">
+              <span class="text-6xl mb-2" aria-hidden="true">🆘</span>
+              <span>一键求助</span>
+            </button>
+            <p class="text-gray-500 mt-4 text-lg">点击按钮，向辅导员发送求助</p>
+          </div>
+
+          <!-- 紧急语句 -->
+          <h3 class="text-xl font-bold mb-4">🗣️ 紧急语句</h3>
+          <p class="text-gray-500 mb-4">点击语句可以语音播报</p>
+          <div class="grid grid-cols-1 gap-3">
+            <button v-for="(s, i) in emergencySpeeches" :key="i"
+                    @click="speakSpeech(s)"
+                    class="speech-btn bg-danger/10 rounded-card p-5 text-left flex items-center gap-4 hover:bg-danger/20 transition-all"
+                    :class="{ 'speaking': speakingText === s }"
+                    :aria-label="'播报：' + s">
+              <span class="text-2xl flex-shrink-0" aria-hidden="true">📢</span>
+              <span class="text-xl text-danger font-medium">{{ s }}</span>
+            </button>
+          </div>
+
+          <!-- 冷静技巧 -->
+          <div class="mt-8 bg-accent/10 rounded-card-lg p-6">
+            <h3 class="text-xl font-bold mb-4 text-accent-dark">🧘 冷静小技巧</h3>
+            <div class="space-y-3">
+              <div v-for="(tip, i) in calmTips" :key="i" class="flex items-start gap-3">
+                <span class="text-xl flex-shrink-0" aria-hidden="true">{{ tip.icon }}</span>
+                <p class="text-lg text-gray-700">{{ tip.text }}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== AI 聊天模块 ========== -->
+        <section v-if="currentPage === 'chat'" aria-label="AI聊天">
+          <h2 class="text-2xl font-bold mb-2">🤖 AI 聊天陪伴</h2>
+          <p class="text-gray-500 mb-4 text-lg">有什么想说的，我都在这里听</p>
+
+          <!-- 聊天消息列表 -->
+          <div ref="chatMessagesContainer" class="bg-white rounded-card-lg shadow-sm overflow-hidden mb-4" style="height: calc(100vh - 420px); min-height: 300px;">
+            <div class="h-full overflow-y-auto p-4 space-y-4" id="chat-scroll-area">
+              <!-- 欢迎消息 -->
+              <div v-if="chatMessages.length === 0" class="text-center py-8">
+                <div class="text-6xl mb-4">🤖</div>
+                <p class="text-lg text-gray-500">你好呀！我是你的 AI 伙伴</p>
+                <p class="text-base text-gray-400 mt-2">有什么想聊的，尽管跟我说</p>
+              </div>
+
+              <!-- 消息列表 -->
+              <div v-for="(msg, idx) in chatMessages" :key="idx"
+                   class="flex gap-3"
+                   :class="msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'">
+                <!-- 头像 -->
+                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-lg"
+                     :class="msg.role === 'user' ? 'bg-primary text-white' : 'bg-accent text-white'">
+                  {{ msg.role === 'user' ? '😊' : '🤖' }}
+                </div>
+                <!-- 消息气泡 -->
+                <div class="max-w-[75%] px-4 py-3 rounded-2xl text-lg leading-relaxed"
+                     :class="msg.role === 'user'
+                       ? 'bg-primary text-white rounded-tr-sm'
+                       : 'bg-warm text-gray-700 rounded-tl-sm'">
+                  <span v-if="msg.role === 'ai' && msg.typing" class="inline-flex items-center gap-1">
+                    <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0s;"></span>
+                    <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.15s;"></span>
+                    <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.3s;"></span>
+                  </span>
+                  <span v-else>{{ msg.content }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 快捷回复 -->
+          <div v-if="chatMessages.length === 0 || (chatMessages.length > 0 && !chatTyping)" class="flex gap-2 mb-4 overflow-x-auto pb-2">
+            <button v-for="quick in chatQuickReplies" :key="quick"
+                    @click="sendChatMessage(quick)"
+                    class="px-4 py-2 rounded-full bg-warm hover:bg-warm-dark text-gray-600 text-base whitespace-nowrap transition-all active:scale-95 flex-shrink-0">
+              {{ quick }}
+            </button>
+          </div>
+
+          <!-- 输入区域 -->
+          <div class="flex gap-2 items-end">
+            <!-- 语音输入按钮 -->
+            <button v-if="speechRecognitionSupported"
+                    @click="toggleVoiceRecognition"
+                    class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
+                    :class="isVoiceRecognizing
+                      ? 'bg-danger text-white recording-pulse'
+                      : 'bg-warm hover:bg-warm-dark text-gray-600'"
+                    :aria-label="isVoiceRecognizing ? '停止语音识别' : '开始语音识别'">
+              🎙️
+            </button>
+            <!-- 输入框 -->
+            <div class="flex-1 relative">
+              <input v-model="chatInput"
+                     @keydown.enter.prevent="sendChatMessage()"
+                     type="text"
+                     :placeholder="isVoiceRecognizing ? '正在聆听...' : '输入你想说的话...'"
+                     class="w-full px-5 py-3 rounded-2xl border-2 border-gray-200 text-lg focus:border-primary focus:ring-0 outline-none transition-colors pr-12"
+                     :disabled="chatTyping"
+                     aria-label="聊天输入框" />
+              <!-- 发送按钮 -->
+              <button @click="sendChatMessage()"
+                      :disabled="!chatInput.trim() || chatTyping"
+                      class="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                      aria-label="发送">
+                ➤
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== 每日总结模块 ========== -->
+        <section v-if="currentPage === 'daily-summary'" aria-label="每日总结">
+          <div class="flex items-center gap-3 mb-6">
+            <button @click="navigateTo('home')"
+                    class="w-11 h-11 flex items-center justify-center rounded-full bg-warm hover:bg-warm-dark transition-colors"
+                    aria-label="返回首页">
+              ←
+            </button>
+            <h2 class="text-2xl font-bold flex-1">📋 今日总结</h2>
+          </div>
+
+          <!-- 总结卡片 -->
+          <div v-if="dailySummaryLoading" class="text-center py-12">
+            <div class="spinner mx-auto mb-4"></div>
+            <p class="text-gray-500 text-lg">正在生成今日总结...</p>
+          </div>
+
+          <div v-else>
+            <!-- 日期 -->
+            <div class="text-center mb-6">
+              <p class="text-gray-500 text-lg">{{ dailySummary.date }}</p>
+            </div>
+
+            <!-- 统计卡片 -->
+            <div class="grid grid-cols-3 gap-3 mb-6">
+              <div class="bg-white rounded-card p-4 text-center shadow-sm">
+                <div class="text-3xl mb-1" aria-hidden="true">✅</div>
+                <div class="text-2xl font-bold text-primary">{{ dailySummary.tasks_completed }}</div>
+                <div class="text-sm text-gray-500">完成任务</div>
+              </div>
+              <div class="bg-white rounded-card p-4 text-center shadow-sm">
+                <div class="text-3xl mb-1" aria-hidden="true">⭐</div>
+                <div class="text-2xl font-bold text-warning">{{ dailySummary.stars_earned }}</div>
+                <div class="text-sm text-gray-500">获得星星</div>
+              </div>
+              <div class="bg-white rounded-card p-4 text-center shadow-sm">
+                <div class="text-3xl mb-1" aria-hidden="true">{{ dailySummary.main_mood_emoji }}</div>
+                <div class="text-2xl font-bold text-accent">{{ dailySummary.moods_logged }}</div>
+                <div class="text-sm text-gray-500">心情记录</div>
+              </div>
+            </div>
+
+            <!-- 主要情绪 -->
+            <div class="bg-white rounded-card-lg p-6 mb-4 shadow-sm">
+              <h3 class="text-lg font-bold mb-3">😊 今日情绪</h3>
+              <div class="flex items-center gap-3 mb-3">
+                <span class="text-4xl">{{ dailySummary.main_mood_emoji }}</span>
+                <span class="text-xl font-bold text-gray-700">主要情绪：{{ dailySummary.main_mood }}</span>
+              </div>
+              <p class="text-base text-gray-600 leading-relaxed">{{ dailySummary.mood_change_desc }}</p>
+            </div>
+
+            <!-- 任务完成情况 -->
+            <div class="bg-white rounded-card-lg p-6 mb-4 shadow-sm">
+              <h3 class="text-lg font-bold mb-3">📋 任务完成</h3>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-base text-gray-600">完成率</span>
+                <span class="text-lg font-bold text-primary">
+                  {{ dailySummary.total_tasks > 0 ? Math.round(dailySummary.tasks_completed / dailySummary.total_tasks * 100) : 0 }}%
+                </span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-4">
+                <div class="bg-gradient-to-r from-primary to-primary-light rounded-full h-4 transition-all duration-500"
+                     :style="{ width: (dailySummary.total_tasks > 0 ? Math.round(dailySummary.tasks_completed / dailySummary.total_tasks * 100) : 0) + '%' }"></div>
+              </div>
+              <p class="text-sm text-gray-500 mt-2">
+                完成了 {{ dailySummary.tasks_completed }} / {{ dailySummary.total_tasks }} 个任务
+              </p>
+            </div>
+
+            <!-- 鼓励语 -->
+            <div class="bg-gradient-to-br from-accent to-accent-dark rounded-card-lg p-6 text-white shadow-lg">
+              <div class="text-4xl mb-3" aria-hidden="true">💪</div>
+              <h3 class="text-lg font-bold mb-2">今日鼓励</h3>
+              <p class="text-lg leading-relaxed">{{ dailySummary.encouragement }}</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== 放松页面（白噪音 + 呼吸引导） ========== -->
+        <section v-if="currentPage === 'relax'" aria-label="放松">
+          <h2 class="text-2xl font-bold mb-2">🌿 放松时刻</h2>
+          <p class="text-gray-500 mb-6 text-lg">听听白噪音，做做深呼吸</p>
+
+          <!-- 白噪音播放器 -->
+          <div class="bg-white rounded-card-lg p-6 mb-6 shadow-sm">
+            <h3 class="text-lg font-bold mb-4">🎵 白噪音</h3>
+
+            <!-- 噪音类型选择 -->
+            <div class="grid grid-cols-5 gap-3 mb-5">
+              <button v-for="noise in noiseTypes" :key="noise.id"
+                      @click="selectNoise(noise.id)"
+                      class="flex flex-col items-center gap-2 p-3 rounded-xl transition-all"
+                      :class="currentNoise === noise.id
+                        ? 'bg-accent/20 ring-2 ring-accent'
+                        : 'bg-warm hover:bg-warm-dark'"
+                      :aria-label="'播放' + noise.label">
+                <span class="text-3xl">{{ noise.icon }}</span>
+                <span class="text-sm font-medium" :class="currentNoise === noise.id ? 'text-accent-dark' : 'text-gray-600'">{{ noise.label }}</span>
+              </button>
+            </div>
+
+            <!-- 播放控制 -->
+            <div class="flex items-center justify-center gap-4 mb-5">
+              <button @click="toggleNoise"
+                      class="w-16 h-16 rounded-full flex items-center justify-center text-3xl shadow-lg transition-all active:scale-95"
+                      :class="noisePlaying ? 'bg-accent text-white' : 'bg-warm text-gray-600'"
+                      :aria-label="noisePlaying ? '暂停' : '播放'">
+                {{ noisePlaying ? '⏸️' : '▶️' }}
+              </button>
+            </div>
+
+            <!-- 声波动画 -->
+            <div class="flex items-center justify-center gap-1 h-10 mb-5">
+              <div v-for="i in 20" :key="i"
+                   class="sound-wave-bar"
+                   :class="{ 'paused': !noisePlaying }"
+                   :style="{
+                     '--wave-height': (12 + Math.random() * 20) + 'px',
+                     '--wave-duration': (0.5 + Math.random() * 0.8) + 's',
+                     '--wave-delay': (Math.random() * 0.5) + 's',
+                   }">
+              </div>
+            </div>
+
+            <!-- 音量滑块 -->
+            <div class="flex items-center gap-3">
+              <span class="text-lg">🔈</span>
+              <input type="range" v-model.number="noiseVolume" min="0" max="100" step="1"
+                     @input="updateNoiseVolume"
+                     class="flex-1 h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-accent"
+                     aria-label="音量调节" />
+              <span class="text-lg">🔊</span>
+              <span class="text-sm text-gray-500 w-10 text-right">{{ noiseVolume }}%</span>
+            </div>
+          </div>
+
+          <!-- 呼吸引导 -->
+          <div class="bg-white rounded-card-lg p-6 shadow-sm">
+            <h3 class="text-lg font-bold mb-4">🧘 呼吸引导（4-7-8呼吸法）</h3>
+            <p class="text-gray-500 text-base mb-5">吸气4秒 → 屏息7秒 → 呼气8秒，循环3次</p>
+
+            <!-- 呼吸动画区域 -->
+            <div class="flex flex-col items-center py-6">
+              <div v-if="breathState === 'idle'" class="breath-circle">
+                <span class="text-lg text-accent-dark font-medium">准备开始</span>
+              </div>
+              <div v-else-if="breathState === 'done'" class="breath-circle" style="transform: scale(1);">
+                <span class="text-lg text-accent-dark font-bold">做得很好！</span>
+              </div>
+              <div v-else
+                   class="breath-circle"
+                   :class="breathAnimClass"
+                   :key="breathAnimKey">
+                <span class="text-lg text-accent-dark font-bold">{{ breathText }}</span>
+              </div>
+
+              <!-- 倒计时 -->
+              <div v-if="breathState !== 'idle' && breathState !== 'done'" class="mt-4 text-3xl font-bold text-accent">
+                {{ breathCountdown }}
+              </div>
+
+              <!-- 循环计数 -->
+              <div v-if="breathState !== 'idle'" class="mt-3 text-sm text-gray-500">
+                第 {{ breathCycle }} / 3 次
+              </div>
+            </div>
+
+            <!-- 控制按钮 -->
+            <div class="flex justify-center gap-4 mt-4">
+              <button v-if="breathState === 'idle'"
+                      @click="startBreathing"
+                      class="px-8 py-3 bg-accent hover:bg-accent-dark text-white text-lg font-bold rounded-xl shadow-lg transition-all active:scale-[0.98]"
+                      aria-label="开始呼吸引导">
+                🧘 开始呼吸
+              </button>
+              <button v-else
+                      @click="stopBreathing"
+                      class="px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 text-lg font-bold rounded-xl shadow-lg transition-all active:scale-[0.98]"
+                      aria-label="停止呼吸引导">
+                ⏹️ 停止
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== 日历视图 ========== -->
+        <section v-if="currentPage === 'calendar'" aria-label="日历">
+          <h2 class="text-2xl font-bold mb-2">📅 日历</h2>
+          <p class="text-gray-500 mb-6 text-lg">查看你的记录和成就</p>
+
+          <!-- 月份切换 -->
+          <div class="bg-white rounded-card-lg p-5 mb-4 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <button @click="changeCalendarMonth(-1)"
+                      class="w-10 h-10 rounded-full bg-warm hover:bg-warm-dark flex items-center justify-center transition-colors"
+                      aria-label="上个月">
+                ←
+              </button>
+              <h3 class="text-xl font-bold">{{ calendarYear }}年{{ calendarMonth }}月</h3>
+              <button @click="changeCalendarMonth(1)"
+                      class="w-10 h-10 rounded-full bg-warm hover:bg-warm-dark flex items-center justify-center transition-colors"
+                      aria-label="下个月">
+                →
+              </button>
+            </div>
+
+            <!-- 星期标题 -->
+            <div class="calendar-grid mb-2">
+              <div v-for="d in ['日','一','二','三','四','五','六']" :key="d"
+                   class="text-center text-sm text-gray-400 font-medium py-1">
+                {{ d }}
+              </div>
+            </div>
+
+            <!-- 日期网格 -->
+            <div class="calendar-grid">
+              <div v-for="(day, idx) in calendarDays" :key="idx"
+                   class="calendar-day"
+                   :class="{
+                     'today': day.isToday,
+                     'other-month': !day.isCurrentMonth,
+                   }"
+                   @click="showDayDetail(day)">
+                <span>{{ day.day }}</span>
+                <div v-if="day.hasTask" class="calendar-dot task"></div>
+                <div v-if="day.hasMood && !day.hasTask" class="calendar-dot mood" style="left: calc(50% + 5px);"></div>
+                <div v-if="day.hasMood && day.hasTask" class="calendar-dot mood" style="left: calc(50% + 5px);"></div>
+              </div>
+            </div>
+
+            <!-- 图例 -->
+            <div class="flex items-center gap-4 mt-4 text-sm text-gray-500">
+              <div class="flex items-center gap-1">
+                <div class="w-3 h-3 rounded-full bg-success"></div>
+                <span>完成任务</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <div class="w-3 h-3 rounded-full bg-warning"></div>
+                <span>记录心情</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 日期详情弹窗 -->
+          <div v-if="selectedDayDetail" class="bg-white rounded-card-lg p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-bold">{{ selectedDayDetail.dateStr }}</h3>
+              <button @click="selectedDayDetail = null"
+                      class="text-gray-400 hover:text-gray-600 text-xl"
+                      aria-label="关闭">✕</button>
+            </div>
+            <div v-if="selectedDayDetail.tasks.length === 0 && selectedDayDetail.moods.length === 0"
+                 class="text-center text-gray-400 py-4">
+              <p>这一天没有记录</p>
+            </div>
+            <div v-else>
+              <!-- 任务记录 -->
+              <div v-if="selectedDayDetail.tasks.length > 0" class="mb-4">
+                <h4 class="text-base font-bold text-gray-700 mb-2">✅ 完成任务 ({{ selectedDayDetail.tasks.length }})</h4>
+                <div v-for="task in selectedDayDetail.tasks" :key="task.id"
+                     class="flex items-center gap-2 py-2 border-b border-gray-50">
+                  <span>{{ task.template?.icon || '📋' }}</span>
+                  <span class="text-gray-700">{{ task.template?.name || '未命名任务' }}</span>
+                </div>
+              </div>
+              <!-- 心情记录 -->
+              <div v-if="selectedDayDetail.moods.length > 0">
+                <h4 class="text-base font-bold text-gray-700 mb-2">😊 心情记录 ({{ selectedDayDetail.moods.length }})</h4>
+                <div v-for="mood in selectedDayDetail.moods" :key="mood.id"
+                     class="flex items-center gap-2 py-2 border-b border-gray-50">
+                  <span>{{ getMoodEmoji(mood.mood_type) }}</span>
+                  <span class="text-gray-700">{{ getMoodLabel(mood.mood_type) }}</span>
+                  <span class="text-sm text-gray-400 ml-auto">{{ formatTime(mood.created_at) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== 设置页 ========== -->
+        <section v-if="currentPage === 'settings'" aria-label="设置">
+          <h2 class="text-2xl font-bold mb-6">⚙️ 设置</h2>
+
+          <!-- 语音设置 -->
+          <div class="bg-white rounded-card-lg p-6 mb-4 shadow-sm">
+            <h3 class="text-xl font-bold mb-5">🔊 语音设置</h3>
+
+            <!-- 语音开关 -->
+            <div class="flex items-center justify-between py-4 border-b border-gray-100">
+              <span class="text-lg">语音播报</span>
+              <button @click="settings.voiceEnabled = !settings.voiceEnabled; saveSettings()"
+                      class="relative w-16 h-9 rounded-full transition-colors"
+                      :class="settings.voiceEnabled ? 'bg-primary' : 'bg-gray-300'"
+                      role="switch" :aria-checked="settings.voiceEnabled" aria-label="语音播报开关">
+                <span class="absolute top-1 w-7 h-7 bg-white rounded-full shadow transition-transform"
+                      :class="settings.voiceEnabled ? 'left-8' : 'left-1'"></span>
+              </button>
+            </div>
+
+            <!-- 语速 -->
+            <div class="py-4 border-b border-gray-100">
+              <div class="flex justify-between mb-3">
+                <span class="text-lg">语速</span>
+                <span class="text-lg font-bold text-primary">{{ settings.speechRate.toFixed(2) }}x</span>
+              </div>
+              <input type="range" v-model.number="settings.speechRate" min="0.5" max="1.5" step="0.05"
+                     @change="saveSettings()"
+                     class="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-primary"
+                     aria-label="语速调节" />
+              <div class="flex justify-between text-sm text-gray-400 mt-1">
+                <span>慢 0.5x</span><span>正常 1.0x</span><span>快 1.5x</span>
+              </div>
+            </div>
+
+            <!-- 音调 -->
+            <div class="py-4 border-b border-gray-100">
+              <div class="flex justify-between mb-3">
+                <span class="text-lg">音调</span>
+                <span class="text-lg font-bold text-primary">{{ settings.speechPitch.toFixed(2) }}</span>
+              </div>
+              <input type="range" v-model.number="settings.speechPitch" min="0.5" max="2.0" step="0.05"
+                     @change="saveSettings()"
+                     class="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-primary"
+                     aria-label="音调调节" />
+              <div class="flex justify-between text-sm text-gray-400 mt-1">
+                <span>低 0.5</span><span>正常 1.0</span><span>高 2.0</span>
+              </div>
+            </div>
+
+            <!-- 试听按钮 -->
+            <div class="pt-4">
+              <button @click="speak('你好，我是星职助手，很高兴为你服务！')"
+                      class="w-full py-3 bg-accent hover:bg-accent-dark text-white text-lg font-bold rounded-xl transition-all"
+                      aria-label="试听语音效果">
+                🔊 试听效果
+              </button>
+            </div>
+          </div>
+
+          <!-- 字体设置 -->
+          <div class="bg-white rounded-card-lg p-6 mb-4 shadow-sm">
+            <h3 class="text-xl font-bold mb-5">{{ t('settings_font_title') }}</h3>
+            <div class="flex justify-between mb-3">
+              <span class="text-lg">{{ t('settings_font_size') }}</span>
+              <span class="text-lg font-bold text-primary">{{ settings.fontSize }}px</span>
+            </div>
+            <input type="range" v-model.number="settings.fontSize" min="14" max="24" step="1"
+                   @change="saveSettings(); applyFontSize()"
+                   class="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-primary"
+                   aria-label="字体大小调节" />
+            <div class="flex justify-between text-sm text-gray-400 mt-1">
+              <span>{{ t('font_small') }}</span><span>{{ t('font_medium') }}</span><span>{{ t('font_large') }}</span>
+            </div>
+          </div>
+
+          <!-- 深色模式 -->
+          <div class="bg-white rounded-card-lg p-6 mb-4 shadow-sm">
+            <h3 class="text-xl font-bold mb-5">{{ t('settings_dark_title') }}</h3>
+            <div class="flex items-center justify-between py-3">
+              <div class="flex items-center gap-3">
+                <span class="text-2xl">{{ isDarkMode ? '🌙' : '☀️' }}</span>
+                <span class="text-lg">{{ isDarkMode ? t('dark_mode_on') : t('dark_mode_off') }}</span>
+              </div>
+              <button @click="toggleDarkMode"
+                      class="relative w-16 h-9 rounded-full transition-colors"
+                      :class="isDarkMode ? 'bg-primary' : 'bg-gray-300'"
+                      role="switch" :aria-checked="isDarkMode" aria-label="深色模式开关">
+                <span class="absolute top-1 w-7 h-7 bg-white rounded-full shadow transition-transform"
+                      :class="isDarkMode ? 'left-8' : 'left-1'"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 触觉反馈 -->
+          <div class="bg-white rounded-card-lg p-6 mb-4 shadow-sm">
+            <h3 class="text-xl font-bold mb-5">{{ t('settings_haptic_title') }}</h3>
+            <div class="flex items-center justify-between py-3">
+              <div>
+                <span class="text-lg">{{ t('settings_haptic_enable') }}</span>
+                <p class="text-sm text-gray-500">{{ t('settings_haptic_desc') }}</p>
+              </div>
+              <button @click="settings.hapticEnabled = !settings.hapticEnabled; saveSettings()"
+                      class="relative w-16 h-9 rounded-full transition-colors"
+                      :class="settings.hapticEnabled ? 'bg-primary' : 'bg-gray-300'"
+                      role="switch" :aria-checked="settings.hapticEnabled" aria-label="触觉反馈开关">
+                <span class="absolute top-1 w-7 h-7 bg-white rounded-full shadow transition-transform"
+                      :class="settings.hapticEnabled ? 'left-8' : 'left-1'"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 语言切换 -->
+          <div class="bg-white rounded-card-lg p-6 mb-4 shadow-sm">
+            <h3 class="text-xl font-bold mb-5">{{ t('settings_lang_title') }}</h3>
+            <div class="flex rounded-xl bg-warm p-1" role="tablist">
+              <button role="tab" :aria-selected="currentLang === 'zh'"
+                      class="flex-1 py-3 rounded-xl text-lg font-bold transition-all"
+                      :class="currentLang === 'zh' ? 'bg-primary text-white shadow' : 'text-gray-500'"
+                      @click="switchLang('zh')">
+                🇨🇳 中文
+              </button>
+              <button role="tab" :aria-selected="currentLang === 'en'"
+                      class="flex-1 py-3 rounded-xl text-lg font-bold transition-all"
+                      :class="currentLang === 'en' ? 'bg-primary text-white shadow' : 'text-gray-500'"
+                      @click="switchLang('en')">
+                🇺🇸 English
+              </button>
+            </div>
+          </div>
+
+          <!-- 其他设置 -->
+          <div class="bg-white rounded-card-lg p-6 shadow-sm">
+            <h3 class="text-xl font-bold mb-5">📋 其他</h3>
+            <button @click="exportData"
+                    class="w-full py-3 bg-accent/10 hover:bg-accent/20 text-accent-dark text-lg font-bold rounded-xl transition-all mb-3"
+                    aria-label="导出我的数据">
+              📥 导出我的数据
+            </button>
+            <button @click="clearAllData"
+                    class="w-full py-3 bg-danger/10 hover:bg-danger/20 text-danger text-lg font-bold rounded-xl transition-all"
+                    aria-label="清除所有本地数据">
+              🗑️ 清除本地数据
+            </button>
+            <button @click="handleLogout"
+                    class="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-lg font-bold rounded-xl transition-all mt-3"
+                    aria-label="退出登录">
+              🚪 退出登录
+            </button>
+          </div>
+        </section>
+
+        <!-- ========== 个人中心 ========== -->
+        <section v-if="currentPage === 'profile'" aria-label="个人中心">
+          <h2 class="text-2xl font-bold mb-6">👤 个人中心</h2>
+
+          <!-- 用户信息卡片 -->
+          <div class="bg-gradient-to-br from-primary to-primary-light rounded-card-lg p-6 mb-6 text-white shadow-lg">
+            <div class="flex items-center gap-4">
+              <div class="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center text-4xl">
+                {{ userInfo.avatar || '😊' }}
+              </div>
+              <div>
+                <h3 class="text-2xl font-bold">{{ userInfo.name || '用户' }}</h3>
+                <p class="text-lg opacity-80">{{ userInfo.phone || '' }}</p>
+                <p class="text-sm opacity-60 mt-1">{{ userInfo.role === 'admin' ? '管理员' : userInfo.role === 'counselor' ? '辅导员' : '用户' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 数据统计 -->
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="bg-white rounded-card p-5 text-center shadow-sm">
+              <div class="text-3xl mb-1" aria-hidden="true">✅</div>
+              <div class="text-3xl font-bold text-primary">{{ dashboardData.tasks.completed }}</div>
+              <div class="text-base text-gray-500">完成任务</div>
+            </div>
+            <div class="bg-white rounded-card p-5 text-center shadow-sm">
+              <div class="text-3xl mb-1" aria-hidden="true">😊</div>
+              <div class="text-3xl font-bold text-accent">{{ dashboardData.moods.total }}</div>
+              <div class="text-base text-gray-500">心情记录</div>
+            </div>
+            <div class="bg-white rounded-card p-5 text-center shadow-sm">
+              <div class="text-3xl mb-1" aria-hidden="true">🏆</div>
+              <div class="text-3xl font-bold text-warning">{{ dashboardData.achievements.unlocked }}</div>
+              <div class="text-base text-gray-500">获得成就</div>
+            </div>
+            <div class="bg-white rounded-card p-5 text-center shadow-sm">
+              <div class="text-3xl mb-1" aria-hidden="true">⭐</div>
+              <div class="text-3xl font-bold text-primary">{{ totalStars }}</div>
+              <div class="text-base text-gray-500">星星积分</div>
+            </div>
+          </div>
+
+          <!-- 功能入口 -->
+          <div class="bg-white rounded-card-lg shadow-sm overflow-hidden">
+            <button v-for="entry in profileEntries" :key="entry.page"
+                    @click="navigateTo(entry.page)"
+                    class="w-full flex items-center gap-4 p-5 hover:bg-warm transition-colors text-left border-b border-gray-50 last:border-0"
+                    :aria-label="entry.label">
+              <span class="text-2xl" aria-hidden="true">{{ entry.icon }}</span>
+              <span class="text-lg font-medium text-gray-700 flex-1">{{ entry.label }}</span>
+              <span class="text-gray-400" aria-hidden="true">›</span>
+            </button>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- ==================== 底部导航栏 ==================== -->
+      <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-50"
+           role="navigation" aria-label="主导航">
+        <div class="max-w-2xl mx-auto flex justify-around items-center py-2 px-2">
+          <button v-for="nav in navItems" :key="nav.page"
+                  @click="navigateTo(nav.page)"
+                  class="nav-item flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl min-w-[56px]"
+                  :class="{ 'active': currentPage === nav.page }"
+                  :aria-label="nav.label"
+                  :aria-current="currentPage === nav.page ? 'page' : undefined">
+            <span class="text-2xl" aria-hidden="true">{{ currentPage === nav.page ? nav.activeIcon : nav.icon }}</span>
+            <span class="text-xs font-medium">{{ nav.label }}</span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </div>
+
+  <!-- ==================== Vue3 应用逻辑 ==================== -->
+  <script>
+    const { createApp, ref, reactive, computed, watch, onMounted, nextTick } = Vue;
+
+    // ========== API 基础配置 ==========
+    const API_BASE = 'http://localhost:8000/api';
+
+    // 简易 HTTP 请求封装（不依赖 axios）
+    async function apiRequest(method, url, data = null, token = null) {
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+
+      const options = { method, headers };
+      if (data && method !== 'GET') options.body = JSON.stringify(data);
+
+      try {
+        const resp = await fetch(API_BASE + url, options);
+        const json = await resp.json();
+        if (json.code === 0 || resp.ok) return json;
+        throw new Error(json.message || '请求失败');
+      } catch (err) {
+        console.warn('API 请求失败，使用本地数据:', err.message);
+        return null;
+      }
+    }
+
+    // ========== 国际化 (i18n) ==========
+    const I18N = {
+      zh: {
+        app_name: '星职助手',
+        app_subtitle: '你的职场好伙伴',
+        login: '登录',
+        register: '注册',
+        your_name: '👤 你的名字',
+        phone: '📱 手机号码',
+        password: '🔒 密码',
+        checkin_title: '⭐ 每日签到',
+        checkin_btn: '点击签到，获得1颗星星',
+        checkin_done: '今日已签到',
+        checkin_streak: '连续签到 {0} 天',
+        quick_entries: '🚀 快捷入口',
+        mood_title: '😊 今天心情怎么样？',
+        mood_tips: '💡 小建议',
+        mood_history_title: '📅 心情记录',
+        mood_history_empty: '还没有记录，选择一个心情开始吧！',
+        mood_trend_title: '📈 最近7天情绪趋势',
+        mood_trend_empty: '记录更多心情后，这里会显示趋势图',
+        voice_diary_title: '🎙️ 语音日记',
+        voice_record_start: '录一段语音日记',
+        voice_record_stop: '停止录音',
+        voice_play: '播放',
+        voice_diary_item: '语音日记',
+        voice_diary_empty: '还没有语音日记，点击上方按钮开始录制',
+        photo_diary_title: '📷 图片日记',
+        photo_capture_btn: '拍一张照片',
+        photo_diary_item: '图片日记',
+        photo_diary_empty: '还没有图片日记，点击上方按钮拍照',
+        timer_title: '⏱️ 专注计时器',
+        timer_subtitle: '设定时间，专注工作',
+        timer_start: '开始',
+        timer_pause: '暂停',
+        timer_reset: '重置',
+        timer_focusing: '专注中...',
+        timer_ready: '准备开始',
+        timer_done: '时间到！',
+        timer_complete: '太棒了！你专注了 {0} 分钟！',
+        break_reminder_title: '☕ 休息提醒',
+        break_reminder_enable: '自动休息提醒',
+        break_reminder_desc: '每工作25分钟自动提醒休息5分钟',
+        break_time_msg: '休息时间到！起来活动一下吧',
+        break_countdown: '休息倒计时：{0}秒',
+        achievement_title: '🏆 我的成就',
+        achievement_subtitle: '收集星星，解锁徽章',
+        help_title: '🆘 求助中心',
+        help_subtitle: '遇到困难时，不要害怕求助',
+        settings_title: '⚙️ 设置',
+        settings_voice_title: '🔊 语音设置',
+        settings_voice_enable: '语音播报',
+        settings_speech_rate: '语速',
+        settings_speech_pitch: '音调',
+        settings_voice_preview: '🔊 试听效果',
+        settings_font_title: '🔤 字体设置',
+        settings_font_size: '字体大小',
+        font_small: '小 14px',
+        font_medium: '中 18px',
+        font_large: '大 24px',
+        settings_dark_title: '🌙 深色模式',
+        dark_mode_on: '深色模式已开启',
+        dark_mode_off: '深色模式已关闭',
+        settings_haptic_title: '📳 触觉反馈',
+        settings_haptic_enable: '触觉反馈',
+        settings_haptic_desc: '按钮点击时振动反馈',
+        settings_lang_title: '🌐 语言切换',
+        settings_other: '📋 其他',
+        clear_data: '🗑️ 清除本地数据',
+        logout: '🚪 退出登录',
+        profile_title: '👤 个人中心',
+        copy_text: '复制文字',
+        copied: '已复制到剪贴板',
+        voice_prompt: '语音提示',
+        greeting_night: '夜深了',
+        greeting_morning: '早上好',
+        greeting_noon: '中午好',
+        greeting_afternoon: '下午好',
+        greeting_evening: '晚上好',
+        greeting_msgs: [
+          '新的一天，加油！',
+          '今天也要开开心心的！',
+          '你做得很棒，继续保持！',
+          '相信自己，你可以的！',
+        ],
+        today_tasks: '今日任务',
+        today_moods: '今日心情',
+        today_stars: '今日星星',
+        weekly_trend: '📊 本周趋势',
+        record_mood: '记录心情',
+        start_task: '开始任务',
+        comm_helper: '沟通助手',
+        focus_timer: '专注计时',
+        my_achievement: '我的成就',
+        help_center: '求助中心',
+        completed_tasks: '完成任务',
+        mood_records: '心情记录',
+        unlocked_achievements: '获得成就',
+        star_points: '星星积分',
+        task_completed: '太棒了！',
+        task_completed_msg: '你完成了这个任务！',
+        continue_btn: '继续加油 ⭐',
+        comm_title: '💬 沟通助手',
+        comm_subtitle: '点击语句，我会帮你读出来',
+        sos_btn: '一键求助',
+        sos_hint: '点击按钮，向辅导员发送求助',
+        emergency_title: '🗣️ 紧急语句',
+        emergency_hint: '点击语句可以语音播报',
+        calm_tips_title: '🧘 冷静小技巧',
+        task_progress: '任务进度',
+        task_steps: '已完成',
+        task_speak_step: '🔊 语音播报当前步骤',
+        back: '←',
+        checkin_success: '签到成功！获得1颗星星',
+        checkin_already: '今天已经签到过了',
+        voice_recording_limit: '录音时间不能超过30秒',
+        voice_saved: '语音日记已保存',
+        photo_saved: '图片日记已保存',
+        break_remind_voice: '你已经工作了25分钟，该休息5分钟了！',
+        task_select_title: '📋 选择一个任务',
+        task_select_hint: '点击任务卡片开始工作',
+        task_no_templates: '暂无可用任务模板',
+        task_in_progress: '📝 进行中的任务',
+        task_complete: '完成',
+        task_resume: '继续任务',
+        task_unnamed: '未命名任务',
+        task_unnamed2: '未命名',
+      },
+      en: {
+        app_name: 'Star Job Helper',
+        app_subtitle: 'Your Workplace Companion',
+        login: 'Login',
+        register: 'Register',
+        your_name: '👤 Your Name',
+        phone: '📱 Phone Number',
+        password: '🔒 Password',
+        checkin_title: '⭐ Daily Check-in',
+        checkin_btn: 'Tap to check in, earn 1 star',
+        checkin_done: 'Checked in today',
+        checkin_streak: '{0} day streak',
+        quick_entries: '🚀 Quick Access',
+        mood_title: '😊 How are you feeling today?',
+        mood_tips: '💡 Tips',
+        mood_history_title: '📅 Mood History',
+        mood_history_empty: 'No records yet. Select a mood to start!',
+        mood_trend_title: '📈 7-Day Mood Trend',
+        mood_trend_empty: 'Record more moods to see the trend chart',
+        voice_diary_title: '🎙️ Voice Diary',
+        voice_record_start: 'Record a voice diary',
+        voice_record_stop: 'Stop recording',
+        voice_play: 'Play',
+        voice_diary_item: 'Voice diary',
+        voice_diary_empty: 'No voice diaries yet. Tap above to start recording',
+        photo_diary_title: '📷 Photo Diary',
+        photo_capture_btn: 'Take a photo',
+        photo_diary_item: 'Photo diary',
+        photo_diary_empty: 'No photo diaries yet. Tap above to take a photo',
+        timer_title: '⏱️ Focus Timer',
+        timer_subtitle: 'Set time and stay focused',
+        timer_start: 'Start',
+        timer_pause: 'Pause',
+        timer_reset: 'Reset',
+        timer_focusing: 'Focusing...',
+        timer_ready: 'Ready',
+        timer_done: 'Time\'s up!',
+        timer_complete: 'Great! You focused for {0} minutes!',
+        break_reminder_title: '☕ Break Reminder',
+        break_reminder_enable: 'Auto break reminder',
+        break_reminder_desc: 'Remind to take a 5-min break every 25 min',
+        break_time_msg: 'Break time! Get up and move around',
+        break_countdown: 'Break countdown: {0}s',
+        achievement_title: '🏆 My Achievements',
+        achievement_subtitle: 'Collect stars, unlock badges',
+        help_title: '🆘 Help Center',
+        help_subtitle: 'Don\'t be afraid to ask for help',
+        settings_title: '⚙️ Settings',
+        settings_voice_title: '🔊 Voice Settings',
+        settings_voice_enable: 'Voice broadcast',
+        settings_speech_rate: 'Speech rate',
+        settings_speech_pitch: 'Pitch',
+        settings_voice_preview: '🔊 Preview',
+        settings_font_title: '🔤 Font Settings',
+        settings_font_size: 'Font size',
+        font_small: 'S 14px',
+        font_medium: 'M 18px',
+        font_large: 'L 24px',
+        settings_dark_title: '🌙 Dark Mode',
+        dark_mode_on: 'Dark mode on',
+        dark_mode_off: 'Dark mode off',
+        settings_haptic_title: '📳 Haptic Feedback',
+        settings_haptic_enable: 'Haptic feedback',
+        settings_haptic_desc: 'Vibrate on button tap',
+        settings_lang_title: '🌐 Language',
+        settings_other: '📋 Other',
+        clear_data: '🗑️ Clear Local Data',
+        logout: '🚪 Logout',
+        profile_title: '👤 Profile',
+        copy_text: 'Copy text',
+        copied: 'Copied to clipboard',
+        voice_prompt: 'Voice prompt',
+        greeting_night: 'Good night',
+        greeting_morning: 'Good morning',
+        greeting_noon: 'Good noon',
+        greeting_afternoon: 'Good afternoon',
+        greeting_evening: 'Good evening',
+        greeting_msgs: [
+          'A new day, let\'s go!',
+          'Stay happy today!',
+          'You\'re doing great, keep it up!',
+          'Believe in yourself!',
+        ],
+        today_tasks: 'Today\'s Tasks',
+        today_moods: 'Today\'s Moods',
+        today_stars: 'Today\'s Stars',
+        weekly_trend: '📊 Weekly Trend',
+        record_mood: 'Record Mood',
+        start_task: 'Start Task',
+        comm_helper: 'Communication',
+        focus_timer: 'Focus Timer',
+        my_achievement: 'Achievements',
+        help_center: 'Help Center',
+        completed_tasks: 'Tasks Done',
+        mood_records: 'Mood Records',
+        unlocked_achievements: 'Achievements',
+        star_points: 'Star Points',
+        task_completed: 'Great job!',
+        task_completed_msg: 'You completed the task!',
+        continue_btn: 'Keep going ⭐',
+        comm_title: '💬 Communication',
+        comm_subtitle: 'Tap a phrase and I\'ll read it for you',
+        sos_btn: 'SOS Help',
+        sos_hint: 'Tap to send help request to counselor',
+        emergency_title: '🗣️ Emergency Phrases',
+        emergency_hint: 'Tap to hear the phrase spoken',
+        calm_tips_title: '🧘 Calming Tips',
+        task_progress: 'Task Progress',
+        task_steps: 'Completed',
+        task_speak_step: '🔊 Read current step',
+        back: '←',
+        checkin_success: 'Checked in! Earned 1 star',
+        checkin_already: 'Already checked in today',
+        voice_recording_limit: 'Recording cannot exceed 30 seconds',
+        voice_saved: 'Voice diary saved',
+        photo_saved: 'Photo diary saved',
+        break_remind_voice: 'You\'ve been working for 25 minutes, time for a 5-minute break!',
+        task_select_title: '📋 Select a Task',
+        task_select_hint: 'Tap a task card to start',
+        task_no_templates: 'No task templates available',
+        task_in_progress: '📝 In Progress',
+        task_complete: 'Done',
+        task_resume: 'Resume task',
+        task_unnamed: 'Unnamed task',
+        task_unnamed2: 'Unnamed',
+      },
+    };
+
+    // ========== 情绪值映射 ==========
+    const MOOD_VALUE_MAP = {
+      happy: 5, calm: 4, confused: 3, anxious: 2, help: 1, tired: 0,
+      sad: 2, angry: 1,
+    };
+
+    // ========== 本地存储工具 ==========
+    function lsGet(key, defaultVal = null) {
+      try {
+        const v = localStorage.getItem('star_job_' + key);
+        return v ? JSON.parse(v) : defaultVal;
+      } catch { return defaultVal; }
+    }
+    function lsSet(key, val) {
+      try { localStorage.setItem('star_job_' + key, JSON.stringify(val)); } catch {}
+    }
+    function lsRemove(key) {
+      try { localStorage.removeItem('star_job_' + key); } catch {}
+    }
+
+    // ========== 心情类型定义 ==========
+    const MOOD_TYPES = [
+      { type: 'happy',  emoji: '😄', label: '开心', color: '#FF6B35' },
+      { type: 'calm',   emoji: '😌', label: '平静', color: '#4ECDC4' },
+      { type: 'anxious', emoji: '😰', label: '焦虑', color: '#FFD43B' },
+      { type: 'sad',    emoji: '😢', label: '难过', color: '#74C0FC' },
+      { type: 'angry',  emoji: '😤', label: '生气', color: '#FF6B6B' },
+      { type: 'tired',  emoji: '😴', label: '疲惫', color: '#B197FC' },
+    ];
+
+    const MOOD_TIPS_LOCAL = {
+      happy: ['继续保持好心情！', '把快乐分享给身边的人吧！', '记录下让你开心的事情，以后回味。'],
+      calm: ['平静是一种力量，好好享受。', '适合做一些需要专注的事情。', '深呼吸，感受当下的宁静。'],
+      anxious: ['试着深呼吸：吸气4秒，屏住4秒，呼气4秒。', '把焦虑的事情写下来，逐个分析。', '和信任的人聊聊你的感受。', '做一些简单的运动来放松。'],
+      sad: ['允许自己难过，这是正常的情绪。', '试着做一些让自己开心的小事。', '听听喜欢的音乐，或者出去走走。', '如果持续低落，建议寻求专业帮助。'],
+      angry: ['先离开让你生气的地方，冷静一下。', '数到10再做决定。', '运动是释放愤怒的好方法。', '等冷静后再沟通，效果会更好。'],
+      tired: ['休息一下，喝杯水。', '做几个伸展运动。', '闭眼休息几分钟。', '适当休息才能更好地工作。'],
+    };
+
+    // ========== 沟通语句 ==========
+    const SPEECH_CATEGORIES = [
+      { key: 'greeting',    icon: '👋', label: '打招呼' },
+      { key: 'workplace',   icon: '💼', label: '工作场所' },
+      { key: 'emotion',     icon: '💬', label: '表达感受' },
+      { key: 'request',     icon: '🙏', label: '请求帮助' },
+    ];
+
+    const SPEECHES = {
+      greeting: [
+        '大家好，我是新来的，请多关照。',
+        '早上好！今天天气真不错。',
+        '你好，请问你是我的同事吗？',
+        '谢谢你的帮助，你真好。',
+        '再见，明天见！',
+      ],
+      workplace: [
+        '请问洗手间在哪里？',
+        '我需要休息一下，可以吗？',
+        '这个任务我不太明白，能再教我一次吗？',
+        '午饭时间到了吗？',
+        '请问这个文件应该放在哪里？',
+      ],
+      emotion: [
+        '我现在有点紧张。',
+        '我今天心情不太好。',
+        '我感到很开心！',
+        '我有点累，想休息一下。',
+        '这个工作让我很有成就感。',
+      ],
+      request: [
+        '可以帮我看一下这个吗？',
+        '我不太确定怎么做，能指导我一下吗？',
+        '我需要多一点时间，可以吗？',
+        '能陪我一起做这个任务吗？',
+      ],
+    };
+
+    const EMERGENCY_SPEECHES = [
+      '我需要帮助，请帮帮我！',
+      '我感到很不舒服，需要休息。',
+      '我找不到路了，请帮帮我。',
+      '我不明白该怎么做，需要有人指导我。',
+      '我需要见辅导员。',
+    ];
+
+    const CALM_TIPS = [
+      { icon: '🌬️', text: '深呼吸：慢慢吸气4秒，屏住4秒，慢慢呼气4秒' },
+      { icon: '🔢', text: '从1数到10，让自己冷静下来' },
+      { icon: '💧', text: '喝一杯温水，帮助身体放松' },
+      { icon: '🚶', text: '站起来走动一下，换个环境' },
+      { icon: '🤝', text: '找一个信任的人说说话' },
+    ];
+
+    // ========== 白噪音类型定义 ==========
+    const NOISE_TYPES = [
+      { id: 'rain',    label: '雨声',   icon: '🌧️', filterType: 'brown' },
+      { id: 'ocean',   label: '海浪',   icon: '🌊', filterType: 'pink' },
+      { id: 'forest',  label: '森林',   icon: '🌲', filterType: 'brown_low' },
+      { id: 'wind',    label: '风声',   icon: '💨', filterType: 'white' },
+      { id: 'cafe',    label: '咖啡馆', icon: '☕', filterType: 'pink_low' },
+    ];
+
+    // ========== 成就徽章定义（9枚） ==========
+    const BADGE_DEFINITIONS = [
+      { id: 'first_task',    name: '初出茅庐',   description: '完成第一个任务',   emoji: '🌟' },
+      { id: 'five_tasks',    name: '勤勉之星',   description: '累计完成5个任务',  emoji: '🔥' },
+      { id: 'ten_tasks',     name: '任务达人',   description: '累计完成10个任务', emoji: '🏆' },
+      { id: 'first_mood',    name: '情绪观察者', description: '记录第一次情绪',   emoji: '💖' },
+      { id: 'week_streak',   name: '坚持一周',   description: '连续7天有活动',    emoji: '📅' },
+      { id: 'timer_30',      name: '专注新手',   description: '首次专注30分钟',   emoji: '⏰' },
+      { id: 'timer_60',      name: '专注达人',   description: '首次专注60分钟',   emoji: '🎯' },
+      { id: 'speech_10',     name: '沟通之星',   description: '使用沟通语句10次', emoji: '💬' },
+      { id: 'all_moods',     name: '情绪大师',   description: '记录过所有6种情绪', emoji: '🌈' },
+    ];
+
+    // ========== 任务模板（本地降级数据） ==========
+    const DEFAULT_TEMPLATES = [
+      { id: 1, name: '整理工位', icon: '🧹', steps: ['收拾桌面上的物品', '擦拭桌面和键盘', '整理文件和资料', '扔掉不需要的东西', '摆放好个人物品'], is_public: true },
+      { id: 2, name: '晨间准备', icon: '🌅', steps: ['起床洗漱', '吃早餐', '检查今天的工作安排', '准备好需要的物品', '出门上班'], is_public: true },
+      { id: 3, name: '午间休息', icon: '🍱', steps: ['收拾工作区域', '去食堂或准备午餐', '安静地吃完午饭', '散步或休息15分钟', '准备下午的工作'], is_public: true },
+      { id: 4, name: '下班流程', icon: '🏠', steps: ['保存所有工作文件', '整理今天的工作笔记', '关闭电脑和设备', '收拾个人物品', '和同事说再见'], is_public: true },
+      { id: 5, name: '接待客人', icon: '🤝', steps: ['看到客人微笑打招呼', '请客人坐下', '倒一杯水给客人', '询问客人需要什么帮助', '记录客人的需求'], is_public: true },
+      { id: 6, name: '打扫卫生', icon: '🧽', steps: ['准备好清洁工具', '先扫地', '再拖地', '擦拭桌椅', '整理清洁工具'], is_public: true },
+    ];
+
+    // ========== 创建 Vue 应用 ==========
+    const app = createApp({
+      setup() {
+        // ---- 状态 ----
+        const currentPage = ref('home');
+        const authMode = ref('login');
+        const authLoading = ref(false);
+        const authForm = reactive({ name: '', phone: '', password: '' });
+        const token = ref(lsGet('token', ''));
+        const userInfo = reactive(lsGet('userInfo', { id: 0, name: '', phone: '', role: 'user', avatar: null }));
+        const toasts = ref([]);
+        const speakingText = ref('');
+
+        // 仪表盘
+        const dashboardData = reactive({
+          tasks: { total: 0, completed: 0, in_progress: 0 },
+          moods: { total: 0 },
+          achievements: { unlocked: 0 },
+          today: { tasks_completed: 0, stars_earned: 0, moods_logged: 0 },
+          weekly_trend: [],
+        });
+
+        // 心情
+        const selectedMood = ref(null);
+        const moodFeedback = ref([]);
+        const moodHistory = ref([]);
+
+        // 任务
+        const taskTemplates = ref([]);
+        const myTasks = ref([]);
+        const currentTask = ref(null);
+        const showCelebration = ref(false);
+
+        // 沟通
+        const selectedSpeechCat = ref('greeting');
+
+        // 计时器
+        const timerMinutes = ref(25);
+        const timerSeconds = ref(0);
+        const timerRunning = ref(false);
+        const timerFinished = ref(false);
+        let timerInterval = null;
+        const circumference = 2 * Math.PI * 115;
+
+        // 成就
+        const unlockedBadges = ref(lsGet('unlockedBadges', []));
+        const totalStars = ref(lsGet('totalStars', 0));
+
+        // 设置
+        const settings = reactive(lsGet('settings', {
+          voiceEnabled: true,
+          speechRate: 0.85,
+          speechPitch: 1.15,
+          fontSize: 18,
+          darkMode: false,
+          hapticEnabled: true,
+          breakReminder: false,
+        }));
+
+        // 国际化
+        const currentLang = ref(lsGet('lang', 'zh'));
+
+        // 深色模式
+        const isDarkMode = ref(settings.darkMode);
+
+        // 签到
+        const todayCheckedIn = ref(false);
+        const checkinStreak = ref(0);
+
+        // 语音日记
+        const isRecording = ref(false);
+        const recordingSeconds = ref(0);
+        let recordingInterval = null;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        const voiceDiaries = ref(lsGet('voiceDiaries', []));
+        const playingDiaryIdx = ref(-1);
+        let currentAudio = null;
+
+        // 图片日记
+        const photoDiaries = ref(lsGet('photoDiaries', []));
+
+        // 休息提醒
+        const isBreakTime = ref(false);
+        const breakCountdown = ref(0);
+        let breakInterval = null;
+        const showScreenFlash = ref(false);
+        let workElapsedSeconds = 0;
+
+        // 情绪趋势
+        const moodTrendData = ref([]);
+        let moodChart = null;
+        const moodChartCanvas = ref(null);
+
+        // Wake Lock
+        let wakeLock = null;
+
+        // AI 聊天
+        const chatMessages = ref(lsGet('chatMessages', []));
+        const chatInput = ref('');
+        const chatTyping = ref(false);
+        const chatMessagesContainer = ref(null);
+        let typewriterTimer = null;
+        const chatQuickReplies = ['我有点紧张', '今天工作怎么样', '给我讲个笑话', '我有点累', '谢谢你'];
+
+        // 语音识别
+        const speechRecognitionSupported = ref(false);
+        const isVoiceRecognizing = ref(false);
+        let recognition = null;
+
+        // 每日总结
+        const dailySummary = reactive({
+          date: new Date().toISOString().slice(0, 10),
+          tasks_completed: 0,
+          total_tasks: 0,
+          stars_earned: 0,
+          moods_logged: 0,
+          main_mood: '平静',
+          main_mood_emoji: '😌',
+          mood_change_desc: '今天还没有记录心情哦，记得记录一下',
+          encouragement: '新的一天，加油！',
+        });
+        const dailySummaryLoading = ref(false);
+
+        // 白噪音
+        const currentNoise = ref('rain');
+        const noisePlaying = ref(false);
+        const noiseVolume = ref(50);
+        let noiseAudioCtx = null;
+        let noiseSourceNode = null;
+        let noiseGainNode = null;
+
+        // 呼吸引导
+        const breathState = ref('idle'); // idle, inhale, hold, exhale, done
+        const breathText = ref('');
+        const breathCountdown = ref(0);
+        const breathCycle = ref(0);
+        const breathAnimClass = ref('');
+        const breathAnimKey = ref(0);
+        let breathTimer = null;
+
+        // 天气
+        const weatherInfo = ref(null);
+        const weatherTip = ref('');
+
+        // 日历
+        const calendarYear = ref(new Date().getFullYear());
+        const calendarMonth = ref(new Date().getMonth() + 1);
+        const calendarDays = ref([]);
+        const selectedDayDetail = ref(null);
+
+        // ---- 计算属性 ----
+        const userName = computed(() => userInfo.name || '朋友');
+
+        // i18n 翻译函数
+        function t(key, args) {
+          const dict = I18N[currentLang.value] || I18N.zh;
+          let val = dict[key] || I18N.zh[key] || key;
+          if (args) {
+            args.forEach((arg, i) => {
+              val = val.replace('{' + i + '}', arg);
+            });
+          }
+          return val;
+        }
+
+        const recordingTimeDisplay = computed(() => {
+          const m = Math.floor(recordingSeconds.value / 60);
+          const s = recordingSeconds.value % 60;
+          return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        });
+
+        const greetingText = computed(() => {
+          const h = new Date().getHours();
+          if (h < 6) return '夜深了';
+          if (h < 12) return '早上好';
+          if (h < 14) return '中午好';
+          if (h < 18) return '下午好';
+          return '晚上好';
+        });
+
+        const greetingSubText = computed(() => {
+          const msgs = [
+            '新的一天，加油！',
+            '今天也要开开心心的！',
+            '你做得很棒，继续保持！',
+            '相信自己，你可以的！',
+          ];
+          return msgs[new Date().getDay() % msgs.length];
+        });
+
+        const timerPresets = [
+          { minutes: 5,  label: '5分钟',  icon: '⚡' },
+          { minutes: 15, label: '15分钟', icon: '🔥' },
+          { minutes: 25, label: '25分钟', icon: '🍅' },
+          { minutes: 30, label: '30分钟', icon: '⏰' },
+          { minutes: 45, label: '45分钟', icon: '💪' },
+          { minutes: 60, label: '60分钟', icon: '🎯' },
+        ];
+
+        const timerDisplay = computed(() => {
+          const m = Math.floor(timerSeconds.value / 60);
+          const s = timerSeconds.value % 60;
+          return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        });
+
+        const timerProgressOffset = computed(() => {
+          const total = timerMinutes.value * 60;
+          if (total === 0) return 0;
+          const progress = timerSeconds.value / total;
+          return circumference * (1 - progress);
+        });
+
+        const filteredSpeeches = computed(() => {
+          return SPEECHES[selectedSpeechCat.value] || [];
+        });
+
+        const allBadges = computed(() => {
+          return BADGE_DEFINITIONS.map(b => ({
+            ...b,
+            unlocked: unlockedBadges.value.includes(b.id),
+          }));
+        });
+
+        const quickEntries = [
+          { page: 'mood',           icon: '😊', label: '记录心情' },
+          { page: 'task',           icon: '📋', label: '开始任务' },
+          { page: 'communication',  icon: '💬', label: '沟通助手' },
+          { page: 'chat',           icon: '🤖', label: 'AI聊天' },
+          { page: 'timer',          icon: '⏱️', label: '专注计时' },
+          { page: 'relax',          icon: '🌿', label: '放松时刻' },
+          { page: 'calendar',       icon: '📅', label: '日历' },
+          { page: 'daily-summary',  icon: '📊', label: '每日总结' },
+          { page: 'achievement',    icon: '🏆', label: '我的成就' },
+          { page: 'help',           icon: '🆘', label: '求助中心' },
+        ];
+
+        const navItems = [
+          { page: 'home',           icon: '🏠', activeIcon: '🏠', label: '首页' },
+          { page: 'mood',           icon: '😊', activeIcon: '😄', label: '心情' },
+          { page: 'task',           icon: '📋', activeIcon: '✅', label: '任务' },
+          { page: 'chat',           icon: '🤖', activeIcon: '💬', label: '聊天' },
+          { page: 'achievement',    icon: '🏆', activeIcon: '🌟', label: '成就' },
+        ];
+
+        const profileEntries = [
+          { page: 'settings',       icon: '⚙️', label: '设置' },
+          { page: 'relax',          icon: '🌿', label: '放松时刻' },
+          { page: 'calendar',       icon: '📅', label: '日历' },
+          { page: 'achievement',    icon: '🏆', label: '我的成就' },
+          { page: 'help',           icon: '🆘', label: '求助中心' },
+        ];
+
+        // ---- Toast 通知 ----
+        let toastId = 0;
+        function showToast(message, type = 'info') {
+          const id = ++toastId;
+          toasts.value.push({ id, message, type });
+          setTimeout(() => {
+            toasts.value = toasts.value.filter(t => t.id !== id);
+          }, 3000);
+        }
+
+        // ---- 语音播报 ----
+        function speak(text) {
+          if (!settings.voiceEnabled && text !== '你好，我是星职助手，很高兴为你服务！') return;
+          window.speechSynthesis.cancel();
+          const utter = new SpeechSynthesisUtterance(text);
+          utter.lang = 'zh-CN';
+          utter.rate = settings.speechRate;
+          utter.pitch = settings.speechPitch;
+          // 优先选择女声
+          const voices = window.speechSynthesis.getVoices();
+          const femaleVoice = voices.find(v => v.lang.startsWith('zh') && v.name.toLowerCase().includes('female'))
+            || voices.find(v => v.lang.startsWith('zh') && v.name.includes('女'))
+            || voices.find(v => v.lang.startsWith('zh-CN'))
+            || voices.find(v => v.lang.startsWith('zh'));
+          if (femaleVoice) utter.voice = femaleVoice;
+          speakingText.value = text;
+          utter.onend = () => { speakingText.value = ''; };
+          utter.onerror = () => { speakingText.value = ''; };
+          window.speechSynthesis.speak(utter);
+        }
+
+        // ---- 导航 ----
+        function navigateTo(page) {
+          currentPage.value = page;
+          window.location.hash = page;
+          // 页面切换时加载对应数据
+          if (page === 'mood') { loadMoodHistory(); loadMoodTrendData(); renderMoodChart(); }
+          if (page === 'task') { loadTaskTemplates(); loadMyTasks(); }
+          if (page === 'achievement') loadAchievements();
+          if (page === 'home') { loadDashboard(); loadCheckinData(); loadWeather(); }
+          if (page === 'profile') loadDashboard();
+          if (page === 'chat') { scrollChatToBottom(); }
+          if (page === 'daily-summary') { loadDailySummary(); }
+          if (page === 'calendar') { generateCalendarDays(); selectedDayDetail.value = null; }
+          if (page === 'relax') { selectedDayDetail.value = null; }
+          // 焦点管理
+          nextTick(() => {
+            const main = document.querySelector('main');
+            if (main) main.focus();
+          });
+        }
+
+        // ---- 认证 ----
+        async function handleAuth() {
+          authLoading.value = true;
+          try {
+            if (authMode.value === 'register') {
+              const res = await apiRequest('POST', '/auth/register', {
+                phone: authForm.phone,
+                name: authForm.name,
+                password: authForm.password,
+              });
+              if (res && res.code === 0) {
+                showToast('注册成功，请登录', 'success');
+                authMode.value = 'login';
+              } else {
+                // 本地降级注册
+                const users = lsGet('users', []);
+                if (users.find(u => u.phone === authForm.phone)) {
+                  showToast('该手机号已注册', 'error');
+                } else {
+                  const newUser = { id: Date.now(), phone: authForm.phone, name: authForm.name, role: 'user', avatar: null };
+                  users.push(newUser);
+                  lsSet('users', users);
+                  showToast('注册成功（离线模式），请登录', 'success');
+                  authMode.value = 'login';
+                }
+              }
+            } else {
+              const res = await apiRequest('POST', '/auth/login', {
+                phone: authForm.phone,
+                password: authForm.password,
+              });
+              if (res && res.code === 0 && res.data) {
+                token.value = res.data.token;
+                Object.assign(userInfo, res.data.user);
+                lsSet('token', token.value);
+                lsSet('userInfo', { ...userInfo });
+                showToast('登录成功，欢迎回来！', 'success');
+                currentPage.value = 'home';
+                loadDashboard();
+                speak('欢迎回来，' + userInfo.name);
+              } else {
+                // 本地降级登录
+                const users = lsGet('users', []);
+                const user = users.find(u => u.phone === authForm.phone);
+                if (user) {
+                  Object.assign(userInfo, user);
+                  token.value = 'local_' + Date.now();
+                  lsSet('token', token.value);
+                  lsSet('userInfo', { ...userInfo });
+                  showToast('登录成功（离线模式）', 'success');
+                  currentPage.value = 'home';
+                  loadDashboard();
+                  speak('欢迎回来，' + userInfo.name);
+                } else {
+                  showToast('手机号或密码错误', 'error');
+                }
+              }
+            }
+          } catch (err) {
+            showToast('网络错误，请检查连接', 'error');
+          } finally {
+            authLoading.value = false;
+          }
+        }
+
+        function handleLogout() {
+          token.value = '';
+          Object.assign(userInfo, { id: 0, name: '', phone: '', role: 'user', avatar: null });
+          lsRemove('token');
+          lsRemove('userInfo');
+          currentPage.value = 'auth';
+          window.location.hash = '';
+          showToast('已退出登录', 'info');
+        }
+
+        // ---- 仪表盘 ----
+        async function loadDashboard() {
+          const res = await apiRequest('GET', '/stats/dashboard', null, token.value);
+          if (res && res.data) {
+            Object.assign(dashboardData, res.data);
+          } else {
+            // 本地降级
+            const localMoods = lsGet('moodHistory', []);
+            const localTasks = lsGet('myTasks', []);
+            const today = new Date().toISOString().slice(0, 10);
+            const todayMoods = localMoods.filter(m => m.created_at && m.created_at.startsWith(today));
+            dashboardData.moods.total = localMoods.length;
+            dashboardData.today.moods_logged = todayMoods.length;
+            dashboardData.tasks.completed = localTasks.filter(t => t.status === 'completed').length;
+            dashboardData.tasks.total = localTasks.length;
+            dashboardData.tasks.in_progress = dashboardData.tasks.total - dashboardData.tasks.completed;
+            dashboardData.achievements.unlocked = unlockedBadges.value.length;
+            dashboardData.today.stars_earned = totalStars.value;
+          }
+        }
+
+        // ---- 心情 ----
+        async function recordMood(type) {
+          selectedMood.value = type;
+          const mood = MOOD_TYPES.find(m => m.type === type);
+          moodFeedback.value = MOOD_TIPS_LOCAL[type] || ['保持好心情！'];
+
+          // API 记录
+          const res = await apiRequest('POST', '/moods/record', { mood_type: type }, token.value);
+          if (res && res.data && res.data.tips) {
+            moodFeedback.value = res.data.tips;
+          }
+
+          // 本地记录
+          const history = lsGet('moodHistory', []);
+          history.unshift({
+            id: Date.now(),
+            mood_type: type,
+            created_at: new Date().toISOString(),
+          });
+          lsSet('moodHistory', history);
+          moodHistory.value = history.slice(0, 30);
+
+          // 更新统计
+          dashboardData.moods.total++;
+          dashboardData.today.moods_logged++;
+          totalStars.value++;
+          lsSet('totalStars', totalStars.value);
+
+          // 成就检查
+          checkMoodAchievements(type);
+
+          showToast('心情已记录：' + mood.label, 'success');
+          speak('已记录你的心情：' + mood.label + '。' + moodFeedback.value[0]);
+        }
+
+        function checkMoodAchievements(type) {
+          const history = lsGet('moodHistory', []);
+          const types = new Set(history.map(h => h.mood_type));
+
+          // 第一次记录心情
+          if (history.length === 1) unlockBadge('first_mood');
+          // 记录过所有6种情绪
+          if (types.size >= 6) unlockBadge('all_moods');
+        }
+
+        async function loadMoodHistory() {
+          const res = await apiRequest('GET', '/moods/history?limit=30', null, token.value);
+          if (res && res.data) {
+            moodHistory.value = res.data;
+          } else {
+            moodHistory.value = lsGet('moodHistory', []).slice(0, 30);
+          }
+        }
+
+        function getMoodEmoji(type) {
+          const m = MOOD_TYPES.find(m => m.type === type);
+          return m ? m.emoji : '😊';
+        }
+        function getMoodLabel(type) {
+          const m = MOOD_TYPES.find(m => m.type === type);
+          return m ? m.label : type;
+        }
+
+        // ---- 任务 ----
+        async function loadTaskTemplates() {
+          const res = await apiRequest('GET', '/tasks/templates', null, token.value);
+          if (res && res.data) {
+            taskTemplates.value = res.data;
+          } else {
+            taskTemplates.value = DEFAULT_TEMPLATES;
+          }
+        }
+
+        async function loadMyTasks() {
+          const res = await apiRequest('GET', '/tasks/my', null, token.value);
+          if (res && res.data) {
+            myTasks.value = res.data;
+          } else {
+            myTasks.value = lsGet('myTasks', []);
+          }
+        }
+
+        async function startTask(tpl) {
+          const res = await apiRequest('POST', '/tasks/my', { template_id: tpl.id }, token.value);
+          if (res && res.data) {
+            currentTask.value = {
+              ...res.data,
+              template: tpl,
+            };
+          } else {
+            // 本地创建
+            const task = {
+              id: Date.now(),
+              template: tpl,
+              completed_steps: [],
+              status: 'in_progress',
+              created_at: new Date().toISOString(),
+            };
+            const tasks = lsGet('myTasks', []);
+            tasks.unshift(task);
+            lsSet('myTasks', tasks);
+            currentTask.value = task;
+          }
+          speak('开始任务：' + tpl.name + '。共有' + tpl.steps.length + '个步骤。');
+        }
+
+        function resumeTask(task) {
+          currentTask.value = task;
+          speak('继续任务：' + (task.template?.name || '未命名'));
+        }
+
+        async function toggleTaskStep(idx) {
+          if (!currentTask.value) return;
+          const steps = currentTask.value.completed_steps || [];
+          const wasComplete = steps.includes(idx);
+
+          if (wasComplete) {
+            currentTask.value.completed_steps = steps.filter(s => s !== idx);
+          } else {
+            steps.push(idx);
+            currentTask.value.completed_steps = [...steps];
+          }
+
+          // API 更新
+          await apiRequest('POST', '/tasks/' + currentTask.value.id + '/step', { step_index: idx }, token.value);
+
+          // 本地更新
+          const tasks = lsGet('myTasks', []);
+          const ti = tasks.findIndex(t => t.id === currentTask.value.id);
+          if (ti >= 0) {
+            tasks[ti].completed_steps = [...currentTask.value.completed_steps];
+            lsSet('myTasks', tasks);
+          }
+
+          // 检查是否完成
+          const totalSteps = currentTask.value.template?.steps?.length || 0;
+          if (currentTask.value.completed_steps.length === totalSteps && totalSteps > 0) {
+            currentTask.value.status = 'completed';
+            // 更新本地
+            if (ti >= 0) {
+              tasks[ti].status = 'completed';
+              tasks[ti].completed_at = new Date().toISOString();
+              lsSet('myTasks', tasks);
+            }
+            showCelebration.value = true;
+            totalStars.value += 5;
+            lsSet('totalStars', totalStars.value);
+            dashboardData.tasks.completed++;
+            dashboardData.today.tasks_completed++;
+            dashboardData.today.stars_earned += 5;
+
+            // 成就检查
+            const allCompleted = tasks.filter(t => t.status === 'completed').length;
+            if (allCompleted === 1) unlockBadge('first_task');
+            if (allCompleted >= 5) unlockBadge('five_tasks');
+            if (allCompleted >= 10) unlockBadge('ten_tasks');
+
+            speak('太棒了！你完成了这个任务！获得5颗星星！');
+          }
+        }
+
+        function getTaskProgress(task) {
+          if (!task || !task.template?.steps) return 0;
+          const total = task.template.steps.length;
+          const done = task.completed_steps?.length || 0;
+          return total > 0 ? Math.round((done / total) * 100) : 0;
+        }
+
+        function speakCurrentStep() {
+          if (!currentTask.value || !currentTask.value.template?.steps) return;
+          const steps = currentTask.value.template.steps;
+          const completed = currentTask.value.completed_steps || [];
+          const nextIdx = completed.length < steps.length ? completed.length : steps.length - 1;
+          speak('第' + (nextIdx + 1) + '步：' + steps[nextIdx]);
+        }
+
+        // ---- 沟通 ----
+        function speakSpeech(text) {
+          speak(text);
+          // 统计
+          let count = lsGet('speechCount', 0) + 1;
+          lsSet('speechCount', count);
+          if (count === 10) unlockBadge('speech_10');
+        }
+
+        // ---- 计时器 ----
+        function setTimer(minutes) {
+          timerMinutes.value = minutes;
+          timerSeconds.value = minutes * 60;
+          timerFinished.value = false;
+        }
+
+        function startTimer() {
+          if (timerSeconds.value <= 0) timerSeconds.value = timerMinutes.value * 60;
+          timerRunning.value = true;
+          timerFinished.value = false;
+          workElapsedSeconds = 0;
+          requestWakeLock();
+          timerInterval = setInterval(() => {
+            if (timerSeconds.value > 0) {
+              timerSeconds.value--;
+              workElapsedSeconds++;
+              // 休息提醒：每工作25分钟（1500秒）
+              if (settings.breakReminder && workElapsedSeconds > 0 && workElapsedSeconds % 1500 === 0) {
+                triggerBreakReminder();
+              }
+            } else {
+              clearInterval(timerInterval);
+              timerRunning.value = false;
+              timerFinished.value = true;
+              releaseWakeLock();
+              totalStars.value += timerMinutes.value;
+              lsSet('totalStars', totalStars.value);
+              if (timerMinutes.value >= 30) unlockBadge('timer_30');
+              if (timerMinutes.value >= 60) unlockBadge('timer_60');
+              speak('时间到！你专注了' + timerMinutes.value + '分钟，太棒了！');
+              showToast('专注完成！获得 ' + timerMinutes.value + ' 颗星星', 'success');
+            }
+          }, 1000);
+        }
+
+        function pauseTimer() {
+          clearInterval(timerInterval);
+          timerRunning.value = false;
+          releaseWakeLock();
+        }
+
+        function resetTimer() {
+          clearInterval(timerInterval);
+          timerRunning.value = false;
+          timerFinished.value = false;
+          timerSeconds.value = timerMinutes.value * 60;
+          releaseWakeLock();
+        }
+
+        // ---- 成就 ----
+        function unlockBadge(id) {
+          if (unlockedBadges.value.includes(id)) return;
+          unlockedBadges.value.push(id);
+          lsSet('unlockedBadges', unlockedBadges.value);
+          const badge = BADGE_DEFINITIONS.find(b => b.id === id);
+          if (badge) {
+            vibrateLong();
+            showToast('解锁成就：' + badge.name + '！', 'success');
+            speak('恭喜你，解锁了新成就：' + badge.name);
+          }
+        }
+
+        async function loadAchievements() {
+          const res = await apiRequest('GET', '/achievements', null, token.value);
+          if (res && res.data) {
+            const apiUnlocked = res.data.achievements
+              .filter(a => a.unlocked)
+              .map(a => a.achievement_id);
+            // 合并本地和API的成就
+            const merged = new Set([...unlockedBadges.value, ...apiUnlocked]);
+            unlockedBadges.value = [...merged];
+            lsSet('unlockedBadges', unlockedBadges.value);
+          }
+        }
+
+        // ---- 求助 ----
+        function triggerSOS() {
+          vibrateEmergency();
+          speak('我需要帮助，请帮帮我！');
+          showToast('求助信号已发送！', 'warning');
+          // 这里可以扩展为实际发送求助请求
+          apiRequest('POST', '/help/sos', {}, token.value).catch(() => {});
+        }
+
+        // ---- 设置 ----
+        function saveSettings() {
+          lsSet('settings', { ...settings });
+        }
+
+        function applyFontSize() {
+          document.documentElement.style.fontSize = settings.fontSize + 'px';
+        }
+
+        function clearAllData() {
+          if (confirm('确定要清除所有本地数据吗？此操作不可恢复。')) {
+            const keys = Object.keys(localStorage).filter(k => k.startsWith('star_job_'));
+            keys.forEach(k => localStorage.removeItem(k));
+            showToast('本地数据已清除', 'info');
+          }
+        }
+
+        // ---- 触觉反馈 ----
+        function vibrateShort() {
+          if (!settings.hapticEnabled) return;
+          try { navigator.vibrate && navigator.vibrate(50); } catch {}
+        }
+        function vibrateLong() {
+          if (!settings.hapticEnabled) return;
+          try { navigator.vibrate && navigator.vibrate(200); } catch {}
+        }
+        function vibrateEmergency() {
+          if (!settings.hapticEnabled) return;
+          try { navigator.vibrate && navigator.vibrate([500, 200, 500, 200, 500]); } catch {}
+        }
+
+        // ---- 剪贴板集成 ----
+        async function copyToClipboard(text) {
+          vibrateShort();
+          try {
+            await navigator.clipboard.writeText(text);
+            showToast(t('copied'), 'success');
+          } catch {
+            // 降级方案
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast(t('copied'), 'success');
+          }
+        }
+
+        // ---- 深色模式 ----
+        function toggleDarkMode() {
+          vibrateShort();
+          isDarkMode.value = !isDarkMode.value;
+          settings.darkMode = isDarkMode.value;
+          saveSettings();
+          applyDarkMode();
+        }
+        function applyDarkMode() {
+          if (isDarkMode.value) {
+            document.documentElement.classList.add('dark');
+            document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#1A1A2E');
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#FF6B35');
+          }
+        }
+
+        // ---- 国际化切换 ----
+        function switchLang(lang) {
+          vibrateShort();
+          currentLang.value = lang;
+          lsSet('lang', lang);
+        }
+
+        // ---- 签到系统 ----
+        function loadCheckinData() {
+          const checkinData = lsGet('checkinData', { dates: [], streak: 0 });
+          const today = new Date().toISOString().slice(0, 10);
+          todayCheckedIn.value = checkinData.dates.includes(today);
+          // 计算连续签到天数
+          let streak = 0;
+          const sortedDates = [...checkinData.dates].sort().reverse();
+          const checkDate = new Date();
+          for (let i = 0; i < 365; i++) {
+            const dateStr = checkDate.toISOString().slice(0, 10);
+            if (sortedDates.includes(dateStr)) {
+              streak++;
+              checkDate.setDate(checkDate.getDate() - 1);
+            } else if (i === 0) {
+              // 今天还没签到，检查昨天
+              checkDate.setDate(checkDate.getDate() - 1);
+              continue;
+            } else {
+              break;
+            }
+          }
+          checkinStreak.value = streak;
+        }
+        function doCheckin() {
+          if (todayCheckedIn.value) {
+            showToast(t('checkin_already'), 'warning');
+            return;
+          }
+          vibrateLong();
+          const today = new Date().toISOString().slice(0, 10);
+          const checkinData = lsGet('checkinData', { dates: [], streak: 0 });
+          if (!checkinData.dates.includes(today)) {
+            checkinData.dates.push(today);
+            lsSet('checkinData', checkinData);
+          }
+          todayCheckedIn.value = true;
+          totalStars.value++;
+          lsSet('totalStars', totalStars.value);
+          loadCheckinData();
+          showToast(t('checkin_success'), 'success');
+          speak(t('checkin_success'));
+        }
+
+        // ---- 情绪趋势图表 ----
+        function loadMoodTrendData() {
+          const history = lsGet('moodHistory', []);
+          const now = new Date();
+          const days = [];
+          for (let i = 6; i >= 0; i--) {
+            const d = new Date(now);
+            d.setDate(d.getDate() - i);
+            const dateStr = d.toISOString().slice(0, 10);
+            const dayRecords = history.filter(r => r.created_at && r.created_at.startsWith(dateStr));
+            let avgValue = null;
+            if (dayRecords.length > 0) {
+              const sum = dayRecords.reduce((acc, r) => acc + (MOOD_VALUE_MAP[r.mood_type] ?? 3), 0);
+              avgValue = Math.round((sum / dayRecords.length) * 10) / 10;
+            }
+            days.push({
+              date: dateStr,
+              label: (d.getMonth() + 1) + '/' + d.getDate(),
+              value: avgValue,
+            });
+          }
+          moodTrendData.value = days;
+        }
+        function renderMoodChart() {
+          nextTick(() => {
+            const canvas = moodChartCanvas.value;
+            if (!canvas) return;
+            if (moodChart) { moodChart.destroy(); moodChart = null; }
+            const ctx = canvas.getContext('2d');
+            const labels = moodTrendData.value.map(d => d.label);
+            const data = moodTrendData.value.map(d => d.value);
+            const isDark = isDarkMode.value;
+            moodChart = new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels,
+                datasets: [{
+                  label: currentLang.value === 'zh' ? '情绪值' : 'Mood Value',
+                  data,
+                  borderColor: '#FF6B35',
+                  backgroundColor: 'rgba(255, 107, 53, 0.1)',
+                  borderWidth: 3,
+                  pointBackgroundColor: '#FF6B35',
+                  pointBorderColor: '#fff',
+                  pointBorderWidth: 2,
+                  pointRadius: 5,
+                  tension: 0.3,
+                  fill: true,
+                  spanGaps: true,
+                }],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { display: false },
+                  tooltip: {
+                    callbacks: {
+                      label: (ctx) => {
+                        const v = ctx.parsed.y;
+                        if (v === null) return currentLang.value === 'zh' ? '无数据' : 'No data';
+                        const moodLabels = currentLang.value === 'zh'
+                          ? ['', '疲惫/生气', '焦虑/难过', '困惑', '平静', '开心']
+                          : ['', 'Tired/Angry', 'Anxious/Sad', 'Confused', 'Calm', 'Happy'];
+                        return (moodLabels[Math.round(v)] || '') + ' (' + v + ')';
+                      },
+                    },
+                  },
+                },
+                scales: {
+                  y: {
+                    min: 0, max: 5,
+                    ticks: {
+                      stepSize: 1,
+                      color: isDark ? '#B0B0B0' : '#999',
+                      callback: (v) => {
+                        const moodLabels = currentLang.value === 'zh'
+                          ? ['疲惫', '焦虑', '困惑', '平静', '开心']
+                          : ['Tired', 'Anxious', 'Confused', 'Calm', 'Happy'];
+                        return moodLabels[v] || '';
+                      },
+                    },
+                    grid: { color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' },
+                  },
+                  x: {
+                    ticks: { color: isDark ? '#B0B0B0' : '#999' },
+                    grid: { display: false },
+                  },
+                },
+              },
+            });
+          });
+        }
+
+        // ---- 语音日记 ----
+        async function startVoiceRecording() {
+          vibrateShort();
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            mediaRecorder.ondataavailable = (e) => {
+              if (e.data.size > 0) audioChunks.push(e.data);
+            };
+            mediaRecorder.onstop = () => {
+              stream.getTracks().forEach(t => t.stop());
+              const blob = new Blob(audioChunks, { type: 'audio/webm' });
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                const diaries = lsGet('voiceDiaries', []);
+                diaries.unshift({
+                  data: reader.result,
+                  duration: recordingSeconds.value,
+                  created_at: new Date().toISOString(),
+                });
+                // 限制存储数量，防止 localStorage 溢出
+                if (diaries.length > 10) diaries.length = 10;
+                lsSet('voiceDiaries', diaries);
+                voiceDiaries.value = diaries;
+                showToast(t('voice_saved'), 'success');
+              };
+              reader.readAsDataURL(blob);
+            };
+            mediaRecorder.start();
+            isRecording.value = true;
+            recordingSeconds.value = 0;
+            recordingInterval = setInterval(() => {
+              recordingSeconds.value++;
+              if (recordingSeconds.value >= 30) {
+                stopVoiceRecording();
+                showToast(t('voice_recording_limit'), 'warning');
+              }
+            }, 1000);
+          } catch (err) {
+            showToast(currentLang.value === 'zh' ? '无法访问麦克风' : 'Cannot access microphone', 'error');
+          }
+        }
+        function stopVoiceRecording() {
+          if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+          }
+          isRecording.value = false;
+          clearInterval(recordingInterval);
+        }
+        function playVoiceDiary(diary) {
+          vibrateShort();
+          if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+            playingDiaryIdx.value = -1;
+            return;
+          }
+          const audio = new Audio(diary.data);
+          currentAudio = audio;
+          const idx = voiceDiaries.value.indexOf(diary);
+          playingDiaryIdx.value = idx;
+          audio.onended = () => {
+            playingDiaryIdx.value = -1;
+            currentAudio = null;
+          };
+          audio.play().catch(() => {
+            playingDiaryIdx.value = -1;
+            currentAudio = null;
+          });
+        }
+        function deleteVoiceDiary(idx) {
+          vibrateShort();
+          const diaries = [...voiceDiaries.value];
+          diaries.splice(idx, 1);
+          lsSet('voiceDiaries', diaries);
+          voiceDiaries.value = diaries;
+        }
+
+        // ---- 图片日记 ----
+        function handlePhotoCapture(event) {
+          vibrateShort();
+          const file = event.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const diaries = lsGet('photoDiaries', []);
+            diaries.unshift({
+              data: reader.result,
+              created_at: new Date().toISOString(),
+            });
+            // 限制存储数量，防止 localStorage 溢出
+            if (diaries.length > 9) diaries.length = 9;
+            lsSet('photoDiaries', diaries);
+            photoDiaries.value = diaries;
+            showToast(t('photo_saved'), 'success');
+          };
+          reader.readAsDataURL(file);
+          // 重置 input 以便再次选择同一文件
+          event.target.value = '';
+        }
+        function deletePhotoDiary(idx) {
+          vibrateShort();
+          const diaries = [...photoDiaries.value];
+          diaries.splice(idx, 1);
+          lsSet('photoDiaries', diaries);
+          photoDiaries.value = diaries;
+        }
+
+        // ---- 休息提醒 ----
+        function triggerBreakReminder() {
+          if (!settings.breakReminder) return;
+          isBreakTime.value = true;
+          breakCountdown.value = 300; // 5分钟 = 300秒
+          // 语音播报
+          speak(t('break_remind_voice'));
+          // Toast 通知
+          showToast(t('break_time_msg'), 'warning');
+          // 屏幕闪烁
+          showScreenFlash.value = true;
+          setTimeout(() => { showScreenFlash.value = false; }, 1500);
+          // 倒计时
+          breakInterval = setInterval(() => {
+            breakCountdown.value--;
+            if (breakCountdown.value <= 0) {
+              clearInterval(breakInterval);
+              isBreakTime.value = false;
+              showToast(currentLang.value === 'zh' ? '休息结束，继续加油！' : 'Break over, keep going!', 'info');
+            }
+          }, 1000);
+        }
+
+        // ---- Wake Lock（屏幕常亮） ----
+        async function requestWakeLock() {
+          try {
+            if ('wakeLock' in navigator) {
+              wakeLock = await navigator.wakeLock.request('screen');
+              wakeLock.addEventListener('release', () => { wakeLock = null; });
+            }
+          } catch {}
+        }
+        function releaseWakeLock() {
+          if (wakeLock) {
+            wakeLock.release();
+            wakeLock = null;
+          }
+        }
+
+        // ---- AI 聊天 ----
+
+        // 前端内置规则引擎（降级方案）
+        const AI_RULES = [
+          { keywords: ['紧张', '害怕', '担心'], reply: '深呼吸，慢慢来。紧张是很正常的反应，你做得已经很好了！要不要试试深呼吸放松一下？' },
+          { keywords: ['开心', '高兴', '棒'], reply: '太好了！你的开心让我也很高兴！继续保持好心情，今天一定会很棒的！' },
+          { keywords: ['累', 'tired', '困'], reply: '辛苦了！累了就休息一下吧。休息是为了更好地出发，你已经很努力了！' },
+          { keywords: ['笑话', '开心', 'funny'], reply: '为什么程序员总是分不清万圣节和圣诞节？因为 Oct 31 = Dec 25（八进制的31等于十进制的25）' },
+          { keywords: ['谢谢', '感谢'], reply: '不客气！能帮到你我很开心。如果还有什么需要，随时告诉我哦！' },
+          { keywords: ['工作', '任务'], reply: '今天的工作进展怎么样？如果遇到困难，可以试试把任务分成更小的步骤来完成。一步一步来，你可以的！' },
+          { keywords: [], reply: '我在呢！有什么想聊的吗？你可以告诉我你今天的心情，或者工作中遇到的事情。' },
+        ];
+
+        function localAIReply(message) {
+          const msg = message.toLowerCase();
+          for (const rule of AI_RULES) {
+            if (rule.keywords.length === 0) continue;
+            if (rule.keywords.some(kw => msg.includes(kw))) {
+              return rule.reply;
+            }
+          }
+          return AI_RULES[AI_RULES.length - 1].reply;
+        }
+
+        async function sendChatMessage(quickMsg) {
+          const text = quickMsg || chatInput.value.trim();
+          if (!text || chatTyping.value) return;
+
+          // 添加用户消息
+          chatMessages.value.push({ role: 'user', content: text });
+          chatInput.value = '';
+          saveChatMessages();
+          scrollChatToBottom();
+
+          // 获取最近情绪历史
+          const moodHistory = lsGet('moodHistory', []).slice(0, 5).map(m => m.mood_type);
+
+          // 先显示打字动画
+          chatTyping.value = true;
+          const aiMsg = { role: 'ai', content: '', typing: true };
+          chatMessages.value.push(aiMsg);
+          scrollChatToBottom();
+
+          // 尝试调用后端 API
+          let reply = null;
+          try {
+            const res = await apiRequest('POST', '/ai/chat', {
+              message: text,
+              mood_history: moodHistory,
+            }, token.value);
+            if (res && res.data && res.data.reply) {
+              reply = res.data.reply;
+            }
+          } catch (e) {
+            // 后端不可用，使用本地规则引擎
+          }
+
+          // 降级到本地规则引擎
+          if (!reply) {
+            reply = localAIReply(text);
+          }
+
+          // 模拟延迟后开始打字机效果
+          setTimeout(() => {
+            typewriterEffect(aiMsg, reply);
+          }, 500);
+        }
+
+        function typewriterEffect(msg, fullText) {
+          let index = 0;
+          if (typewriterTimer) clearInterval(typewriterTimer);
+          typewriterTimer = setInterval(() => {
+            if (index < fullText.length) {
+              msg.content += fullText[index];
+              index++;
+              scrollChatToBottom();
+            } else {
+              clearInterval(typewriterTimer);
+              typewriterTimer = null;
+              msg.typing = false;
+              chatTyping.value = false;
+              saveChatMessages();
+              // 语音播报 AI 回复
+              if (settings.voiceEnabled) {
+                speak(fullText);
+              }
+            }
+          }, 40); // 每个字 40ms
+        }
+
+        function scrollChatToBottom() {
+          nextTick(() => {
+            const scrollArea = document.getElementById('chat-scroll-area');
+            if (scrollArea) {
+              scrollArea.scrollTop = scrollArea.scrollHeight;
+            }
+          });
+        }
+
+        function saveChatMessages() {
+          // 只保存非打字状态的消息，最多保留 100 条
+          const toSave = chatMessages.value.filter(m => !m.typing).slice(-100);
+          lsSet('chatMessages', toSave);
+        }
+
+        function clearChatMessages() {
+          chatMessages.value = [];
+          lsSet('chatMessages', []);
+        }
+
+        // ---- 语音识别 ----
+
+        function initSpeechRecognition() {
+          const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+          if (!SpeechRecognition) {
+            speechRecognitionSupported.value = false;
+            return;
+          }
+          speechRecognitionSupported.value = true;
+          recognition = new SpeechRecognition();
+          recognition.lang = 'zh-CN';
+          recognition.interimResults = true;
+          recognition.continuous = false;
+
+          recognition.onresult = (event) => {
+            let transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              transcript += event.results[i][0].transcript;
+            }
+            chatInput.value = transcript;
+          };
+
+          recognition.onend = () => {
+            isVoiceRecognizing.value = false;
+          };
+
+          recognition.onerror = (event) => {
+            isVoiceRecognizing.value = false;
+            if (event.error !== 'no-speech') {
+              console.warn('语音识别错误:', event.error);
+            }
+          };
+        }
+
+        function toggleVoiceRecognition() {
+          if (!recognition) return;
+          if (isVoiceRecognizing.value) {
+            recognition.stop();
+            isVoiceRecognizing.value = false;
+          } else {
+            try {
+              recognition.start();
+              isVoiceRecognizing.value = true;
+              vibrateShort();
+            } catch (e) {
+              console.warn('语音识别启动失败:', e);
+            }
+          }
+        }
+
+        // ---- 每日总结 ----
+
+        async function loadDailySummary() {
+          dailySummaryLoading.value = true;
+          try {
+            const res = await apiRequest('GET', '/ai/daily-summary', null, token.value);
+            if (res && res.data) {
+              Object.assign(dailySummary, res.data);
+            } else {
+              // 本地降级生成总结
+              generateLocalDailySummary();
+            }
+          } catch (e) {
+            generateLocalDailySummary();
+          }
+          dailySummaryLoading.value = false;
+        }
+
+        function generateLocalDailySummary() {
+          const today = new Date().toISOString().slice(0, 10);
+          const localMoods = lsGet('moodHistory', []);
+          const localTasks = lsGet('myTasks', []);
+          const todayMoods = localMoods.filter(m => m.created_at && m.created_at.startsWith(today));
+          const todayTasks = localTasks.filter(t => t.created_at && t.created_at.startsWith(today));
+          const completedTasks = todayTasks.filter(t => t.status === 'completed');
+
+          // 主要情绪
+          const moodEmojiMap = { happy: '😄', calm: '😌', anxious: '😰', sad: '😢', angry: '😤', tired: '😴' };
+          const moodLabelMap = { happy: '开心', calm: '平静', anxious: '焦虑', sad: '难过', angry: '生气', tired: '疲惫' };
+          let mainMood = 'calm';
+          let mainMoodEmoji = '😌';
+          if (todayMoods.length > 0) {
+            const lastMood = todayMoods[0].mood_type;
+            mainMood = moodLabelMap[lastMood] || lastMood;
+            mainMoodEmoji = moodEmojiMap[lastMood] || '😊';
+          }
+
+          // 情绪变化描述
+          let moodChangeDesc = '今天还没有记录心情哦，记得记录一下';
+          if (todayMoods.length >= 2) {
+            const first = moodLabelMap[todayMoods[0].mood_type] || todayMoods[0].mood_type;
+            const last = moodLabelMap[todayMoods[todayMoods.length - 1].mood_type] || todayMoods[todayMoods.length - 1].mood_type;
+            moodChangeDesc = first !== last
+              ? `今天的情绪从${first}变为了${last}`
+              : `今天的情绪一直比较${first}`;
+          } else if (todayMoods.length === 1) {
+            moodChangeDesc = `今天记录了一次${moodLabelMap[todayMoods[0].mood_type] || todayMoods[0].mood_type}的心情`;
+          }
+
+          // 鼓励语
+          const encouragements = [
+            '你今天做得很棒！继续保持！',
+            '每一天的努力都在让你变得更好！',
+            '你已经比昨天进步了，真了不起！',
+            '相信自己的能力，你比想象中更强大！',
+          ];
+          let encouragement = encouragements[Math.floor(Math.random() * encouragements.length)];
+          if (completedTasks.length > 0) {
+            encouragement = `今天完成了${completedTasks.length}个任务，${encouragement}`;
+          }
+
+          Object.assign(dailySummary, {
+            date: today,
+            tasks_completed: completedTasks.length,
+            total_tasks: todayTasks.length,
+            stars_earned: lsGet('totalStars', 0),
+            moods_logged: todayMoods.length,
+            main_mood: mainMood,
+            main_mood_emoji: mainMoodEmoji,
+            mood_change_desc: moodChangeDesc,
+            encouragement: encouragement,
+          });
+        }
+
+        // ---- 白噪音 ----
+
+        // 创建棕色噪音缓冲区（类似雨声）
+        function createBrownNoiseBuffer(audioCtx) {
+          const bufferSize = 2 * audioCtx.sampleRate;
+          const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+          const output = buffer.getChannelData(0);
+          let lastOut = 0;
+          for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            output[i] = (lastOut + (0.02 * white)) / 1.02;
+            lastOut = output[i];
+            output[i] *= 3.5;
+          }
+          return buffer;
+        }
+
+        // 创建白噪音缓冲区
+        function createWhiteNoiseBuffer(audioCtx) {
+          const bufferSize = 2 * audioCtx.sampleRate;
+          const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+          const output = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            output[i] = Math.random() * 2 - 1;
+          }
+          return buffer;
+        }
+
+        // 根据类型创建噪音节点
+        function createNoiseNode(audioCtx, filterType) {
+          const brownBuffer = createBrownNoiseBuffer(audioCtx);
+          const source = audioCtx.createBufferSource();
+          source.buffer = brownBuffer;
+          source.loop = true;
+
+          const gain = audioCtx.createGain();
+          gain.gain.value = noiseVolume.value / 100;
+
+          if (filterType === 'brown') {
+            // 棕色噪音 - 类似雨声，低沉
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 400;
+            source.connect(filter);
+            filter.connect(gain);
+          } else if (filterType === 'brown_low') {
+            // 棕色噪音更低频 - 类似森林
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 200;
+            source.connect(filter);
+            filter.connect(gain);
+          } else if (filterType === 'pink') {
+            // 粉红噪音 - 类似海浪，棕色+低通
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 800;
+            filter.Q.value = 1;
+            source.connect(filter);
+            filter.connect(gain);
+          } else if (filterType === 'pink_low') {
+            // 粉红噪音低频 - 类似咖啡馆
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.value = 500;
+            filter.Q.value = 0.5;
+            source.connect(filter);
+            filter.connect(gain);
+          } else if (filterType === 'white') {
+            // 白噪音 - 类似风声，棕色+高通
+            const whiteBuffer = createWhiteNoiseBuffer(audioCtx);
+            const whiteSource = audioCtx.createBufferSource();
+            whiteSource.buffer = whiteBuffer;
+            whiteSource.loop = true;
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'highpass';
+            filter.frequency.value = 2000;
+            whiteSource.connect(filter);
+            filter.connect(gain);
+            // 混合一些棕色噪音
+            source.connect(gain);
+            return { source, gain, extraSource: whiteSource };
+          } else {
+            source.connect(gain);
+          }
+
+          return { source, gain, extraSource: null };
+        }
+
+        function selectNoise(id) {
+          const wasPlaying = noisePlaying.value;
+          if (wasPlaying) stopNoise();
+          currentNoise.value = id;
+          if (wasPlaying) startNoise();
+        }
+
+        function startNoise() {
+          if (!noiseAudioCtx) {
+            noiseAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          }
+          if (noiseAudioCtx.state === 'suspended') {
+            noiseAudioCtx.resume();
+          }
+          const noiseType = NOISE_TYPES.find(n => n.id === currentNoise.value);
+          const result = createNoiseNode(noiseAudioCtx, noiseType?.filterType || 'brown');
+          noiseSourceNode = result.source;
+          noiseGainNode = result.gain;
+          noiseSourceNode.start(0);
+          noisePlaying.value = true;
+        }
+
+        function stopNoise() {
+          if (noiseSourceNode) {
+            try { noiseSourceNode.stop(); } catch {}
+            noiseSourceNode = null;
+          }
+          noisePlaying.value = false;
+        }
+
+        function toggleNoise() {
+          if (noisePlaying.value) {
+            stopNoise();
+          } else {
+            startNoise();
+          }
+        }
+
+        function updateNoiseVolume() {
+          if (noiseGainNode && noiseAudioCtx) {
+            noiseGainNode.gain.setValueAtTime(noiseVolume.value / 100, noiseAudioCtx.currentTime);
+          }
+        }
+
+        // ---- 呼吸引导 ----
+
+        function startBreathing() {
+          breathCycle.value = 0;
+          breathState.value = 'idle';
+          selectedDayDetail.value = null;
+          nextBreathStep();
+        }
+
+        function nextBreathStep() {
+          if (breathCycle.value >= 3) {
+            breathState.value = 'done';
+            breathText.value = '做得很好！';
+            breathCountdown.value = 0;
+            speak('做得很好！你已经完成了3次呼吸练习。');
+            return;
+          }
+
+          // 吸气 4秒
+          breathState.value = 'inhale';
+          breathText.value = '吸气...';
+          breathCountdown.value = 4;
+          breathAnimClass.value = 'inhale';
+          breathAnimKey.value++;
+          speak('吸气');
+
+          let countdown = 4;
+          breathTimer = setInterval(() => {
+            countdown--;
+            breathCountdown.value = countdown;
+            if (countdown <= 0) {
+              clearInterval(breathTimer);
+              // 屏息 7秒
+              breathState.value = 'hold';
+              breathText.value = '屏住...';
+              breathCountdown.value = 7;
+              breathAnimClass.value = 'hold';
+              breathAnimKey.value++;
+              speak('屏住');
+
+              let holdCount = 7;
+              breathTimer = setInterval(() => {
+                holdCount--;
+                breathCountdown.value = holdCount;
+                if (holdCount <= 0) {
+                  clearInterval(breathTimer);
+                  // 呼气 8秒
+                  breathState.value = 'exhale';
+                  breathText.value = '呼气...';
+                  breathCountdown.value = 8;
+                  breathAnimClass.value = 'exhale';
+                  breathAnimKey.value++;
+                  speak('呼气');
+
+                  let exhaleCount = 8;
+                  breathTimer = setInterval(() => {
+                    exhaleCount--;
+                    breathCountdown.value = exhaleCount;
+                    if (exhaleCount <= 0) {
+                      clearInterval(breathTimer);
+                      breathCycle.value++;
+                      // 递归进入下一个循环
+                      setTimeout(() => nextBreathStep(), 500);
+                    }
+                  }, 1000);
+                }
+              }, 1000);
+            }
+          }, 1000);
+        }
+
+        function stopBreathing() {
+          if (breathTimer) {
+            clearInterval(breathTimer);
+            breathTimer = null;
+          }
+          breathState.value = 'idle';
+          breathText.value = '';
+          breathCountdown.value = 0;
+          breathCycle.value = 0;
+          window.speechSynthesis.cancel();
+        }
+
+        // ---- 天气 ----
+
+        async function loadWeather() {
+          try {
+            const resp = await fetch('https://wttr.in/?format=j1', {
+              headers: { 'Accept': 'application/json' },
+            });
+            if (!resp.ok) return;
+            const data = await resp.json();
+            const current = data.current_condition?.[0];
+            if (!current) return;
+
+            const temp = current.temp_C;
+            const humidity = current.humidity;
+            const desc = current.lang_zh?.[0]?.value || current.weatherDesc?.[0]?.value || '';
+
+            // 天气图标映射
+            const code = parseInt(current.weatherCode) || 0;
+            let icon = '☀️';
+            if (code >= 176 && code <= 311) icon = '🌧️';
+            else if (code >= 119 && code <= 122) icon = '☁️';
+            else if (code >= 113 && code <= 116) icon = '☀️';
+            else if (code >= 320 && code <= 395) icon = '❄️';
+            else if (code >= 353 && code <= 389) icon = '⛈️';
+            else if (code >= 143 && code <= 176) icon = '🌫️';
+
+            weatherInfo.value = {
+              temp,
+              humidity: humidity + '%',
+              desc,
+              icon,
+            };
+
+            // 根据天气生成提示
+            const tips = [];
+            if (code >= 176 && code <= 311) tips.push('今天有雨，记得带伞哦！');
+            if (parseInt(temp) >= 35) tips.push('今天气温很高，记得多喝水！');
+            if (parseInt(temp) <= 5) tips.push('今天很冷，注意保暖！');
+            if (code >= 320 && code <= 395) tips.push('今天有雪，出行注意安全！');
+            if (tips.length === 0) tips.push('今天天气不错，心情也会很好吧！');
+            weatherTip.value = tips[0];
+          } catch (err) {
+            // API 不可用时隐藏天气区域
+            weatherInfo.value = null;
+            weatherTip.value = '';
+          }
+        }
+
+        // ---- 日历 ----
+
+        function generateCalendarDays() {
+          const year = calendarYear.value;
+          const month = calendarMonth.value;
+          const today = new Date();
+          const todayStr = today.toISOString().slice(0, 10);
+
+          // 获取当月第一天和最后一天
+          const firstDay = new Date(year, month - 1, 1);
+          const lastDay = new Date(year, month, 0);
+          const startDayOfWeek = firstDay.getDay(); // 0=周日
+          const daysInMonth = lastDay.getDate();
+
+          // 上个月的天数
+          const prevMonthLastDay = new Date(year, month - 1, 0).getDate();
+
+          // 获取有记录的日期
+          const moods = lsGet('moodHistory', []);
+          const tasks = lsGet('myTasks', []);
+          const moodDates = new Set(moods.map(m => m.created_at?.slice(0, 10)).filter(Boolean));
+          const taskDates = new Set(tasks.filter(t => t.status === 'completed').map(t => t.completed_at?.slice(0, 10) || t.created_at?.slice(0, 10)).filter(Boolean));
+
+          const days = [];
+
+          // 上个月的填充天
+          for (let i = startDayOfWeek - 1; i >= 0; i--) {
+            const day = prevMonthLastDay - i;
+            const date = new Date(year, month - 2, day);
+            const dateStr = date.toISOString().slice(0, 10);
+            days.push({
+              day,
+              isCurrentMonth: false,
+              isToday: dateStr === todayStr,
+              dateStr,
+              hasTask: taskDates.has(dateStr),
+              hasMood: moodDates.has(dateStr),
+            });
+          }
+
+          // 当月的天
+          for (let d = 1; d <= daysInMonth; d++) {
+            const date = new Date(year, month - 1, d);
+            const dateStr = date.toISOString().slice(0, 10);
+            days.push({
+              day: d,
+              isCurrentMonth: true,
+              isToday: dateStr === todayStr,
+              dateStr,
+              hasTask: taskDates.has(dateStr),
+              hasMood: moodDates.has(dateStr),
+            });
+          }
+
+          // 下个月的填充天（补满6行 = 42格）
+          const remaining = 42 - days.length;
+          for (let d = 1; d <= remaining; d++) {
+            const date = new Date(year, month, d);
+            const dateStr = date.toISOString().slice(0, 10);
+            days.push({
+              day: d,
+              isCurrentMonth: false,
+              isToday: dateStr === todayStr,
+              dateStr,
+              hasTask: taskDates.has(dateStr),
+              hasMood: moodDates.has(dateStr),
+            });
+          }
+
+          calendarDays.value = days;
+        }
+
+        function changeCalendarMonth(delta) {
+          calendarMonth.value += delta;
+          if (calendarMonth.value > 12) {
+            calendarMonth.value = 1;
+            calendarYear.value++;
+          } else if (calendarMonth.value < 1) {
+            calendarMonth.value = 12;
+            calendarYear.value--;
+          }
+          generateCalendarDays();
+          selectedDayDetail.value = null;
+        }
+
+        function showDayDetail(day) {
+          const dateStr = day.dateStr;
+          const moods = lsGet('moodHistory', []).filter(m => m.created_at?.startsWith(dateStr));
+          const tasks = lsGet('myTasks', []).filter(t => {
+            const taskDate = t.completed_at?.slice(0, 10) || t.created_at?.slice(0, 10);
+            return taskDate === dateStr && t.status === 'completed';
+          });
+
+          const parts = dateStr.split('-');
+          selectedDayDetail.value = {
+            dateStr: parts[0] + '年' + parseInt(parts[1]) + '月' + parseInt(parts[2]) + '日',
+            moods,
+            tasks,
+          };
+        }
+
+        // ---- 数据导出 ----
+
+        function exportData() {
+          const moods = lsGet('moodHistory', []);
+          const tasks = lsGet('myTasks', []);
+
+          // 构建 CSV 内容（带 BOM 以支持 Excel 中文）
+          let csv = '\uFEFF';
+
+          // 情绪记录
+          csv += '类型,日期时间,详情\n';
+          moods.forEach(m => {
+            const label = getMoodLabel(m.mood_type);
+            const time = m.created_at || '';
+            csv += `情绪记录,${time},${label}\n`;
+          });
+
+          // 任务完成记录
+          tasks.filter(t => t.status === 'completed').forEach(t => {
+            const name = t.template?.name || '未命名任务';
+            const time = t.completed_at || t.created_at || '';
+            const steps = t.template?.steps?.length || 0;
+            csv += `任务完成,${time},${name}(${steps}个步骤)\n`;
+          });
+
+          // 下载
+          const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          const today = new Date().toISOString().slice(0, 10);
+          link.href = url;
+          link.download = '星职助手_数据导出_' + today + '.csv';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+
+          showToast('数据导出成功！', 'success');
+        }
+
+        // ---- 工具函数 ----
+        function formatTime(isoStr) {
+          if (!isoStr) return '';
+          const d = new Date(isoStr);
+          const month = d.getMonth() + 1;
+          const day = d.getDate();
+          const hour = String(d.getHours()).padStart(2, '0');
+          const min = String(d.getMinutes()).padStart(2, '0');
+          return month + '月' + day + '日 ' + hour + ':' + min;
+        }
+
+        function formatWeekDay(dateStr) {
+          const days = ['日', '一', '二', '三', '四', '五', '六'];
+          const d = new Date(dateStr);
+          return '周' + days[d.getDay()];
+        }
+
+        // ---- Hash 路由 ----
+        function handleHashChange() {
+          const hash = window.location.hash.replace('#', '');
+          if (hash && hash !== 'auth') {
+            if (token.value) {
+              currentPage.value = hash;
+            }
+          }
+        }
+
+        // ---- 初始化 ----
+        onMounted(() => {
+          // 加载语音列表
+          window.speechSynthesis.onvoiceschanged = () => {
+            window.speechSynthesis.getVoices();
+          };
+
+          // 应用字体设置
+          applyFontSize();
+
+          // 应用深色模式
+          applyDarkMode();
+
+          // 加载签到数据
+          loadCheckinData();
+
+          // 加载语音/图片日记
+          voiceDiaries.value = lsGet('voiceDiaries', []);
+          photoDiaries.value = lsGet('photoDiaries', []);
+
+          // 初始化语音识别
+          initSpeechRecognition();
+
+          // Hash 路由监听
+          window.addEventListener('hashchange', handleHashChange);
+
+          // 检查登录状态
+          if (token.value) {
+            currentPage.value = window.location.hash.replace('#', '') || 'home';
+            loadDashboard();
+            loadCheckinData();
+            loadWeather();
+            generateCalendarDays();
+          } else {
+            currentPage.value = 'auth';
+          }
+
+          // 初始化计时器
+          timerSeconds.value = timerMinutes.value * 60;
+        });
+
+        return {
+          // 状态
+          currentPage, authMode, authLoading, authForm, token, userInfo,
+          toasts, speakingText, dashboardData,
+          selectedMood, moodFeedback, moodHistory,
+          taskTemplates, myTasks, currentTask, showCelebration,
+          selectedSpeechCat,
+          timerMinutes, timerSeconds, timerRunning, timerFinished, circumference,
+          unlockedBadges, totalStars, settings,
+          currentLang, isDarkMode,
+          todayCheckedIn, checkinStreak,
+          isRecording, recordingSeconds, voiceDiaries, playingDiaryIdx,
+          photoDiaries,
+          isBreakTime, breakCountdown, showScreenFlash,
+          moodTrendData, moodChartCanvas,
+          // AI 聊天
+          chatMessages, chatInput, chatTyping, chatMessagesContainer, chatQuickReplies,
+          // 语音识别
+          speechRecognitionSupported, isVoiceRecognizing,
+          // 每日总结
+          dailySummary, dailySummaryLoading,
+          // 白噪音
+          noiseTypes: NOISE_TYPES, currentNoise, noisePlaying, noiseVolume,
+          // 呼吸引导
+          breathState, breathText, breathCountdown, breathCycle, breathAnimClass, breathAnimKey,
+          // 天气
+          weatherInfo, weatherTip,
+          // 日历
+          calendarYear, calendarMonth, calendarDays, selectedDayDetail,
+
+          // 常量
+          moodTypes: MOOD_TYPES,
+          speechCategories: SPEECH_CATEGORIES,
+          emergencySpeeches: EMERGENCY_SPEECHES,
+          calmTips: CALM_TIPS,
+          timerPresets,
+
+          // 计算属性
+          userName, greetingText, greetingSubText,
+          timerDisplay, timerProgressOffset,
+          filteredSpeeches, allBadges,
+          quickEntries, navItems, profileEntries,
+          recordingTimeDisplay,
+
+          // 方法
+          t, showToast, speak, navigateTo, handleAuth, handleLogout,
+          recordMood, loadMoodHistory, getMoodEmoji, getMoodLabel,
+          loadTaskTemplates, loadMyTasks, startTask, resumeTask,
+          toggleTaskStep, getTaskProgress, speakCurrentStep,
+          speakSpeech,
+          setTimer, startTimer, pauseTimer, resetTimer,
+          unlockBadge, loadAchievements,
+          triggerSOS,
+          saveSettings, applyFontSize, clearAllData,
+          formatTime, formatWeekDay,
+          // 新增功能
+          vibrateShort, vibrateLong, vibrateEmergency,
+          copyToClipboard,
+          toggleDarkMode, applyDarkMode,
+          switchLang,
+          doCheckin, loadCheckinData,
+          loadMoodTrendData, renderMoodChart,
+          startVoiceRecording, stopVoiceRecording, playVoiceDiary, deleteVoiceDiary,
+          handlePhotoCapture, deletePhotoDiary,
+          triggerBreakReminder,
+          // AI 聊天
+          sendChatMessage, clearChatMessages,
+          // 语音识别
+          toggleVoiceRecognition,
+          // 每日总结
+          loadDailySummary,
+          // 白噪音
+          selectNoise, toggleNoise, updateNoiseVolume,
+          // 呼吸引导
+          startBreathing, stopBreathing,
+          // 天气
+          loadWeather,
+          // 日历
+          changeCalendarMonth, showDayDetail,
+          // 数据导出
+          exportData,
+        };
+      },
+    });
+
+    app.mount('#app');
+
+    // ========== PWA Service Worker 注册 ==========
+    if ('serviceWorker' in navigator) {
+      // 内联 Service Worker
+      const swCode = `
+        const CACHE_NAME = 'star-job-helper-v1';
+        const urlsToCache = ['/'];
+
+        self.addEventListener('install', (event) => {
+          event.waitUntil(
+            caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
+          );
+          self.skipWaiting();
+        });
+
+        self.addEventListener('activate', (event) => {
+          event.waitUntil(
+            caches.keys().then((names) =>
+              Promise.all(names.filter(n => n !== CACHE_NAME).map(n => caches.delete(n)))
+            )
+          );
+          self.clients.claim();
+        });
+
+        self.addEventListener('fetch', (event) => {
+          event.respondWith(
+            caches.match(event.request).then((response) => {
+              return response || fetch(event.request).then((fetchRes) => {
+                if (fetchRes && fetchRes.status === 200) {
+                  const resClone = fetchRes.clone();
+                  caches.open(CACHE_NAME).then((cache) => cache.put(event.request, resClone));
+                }
+                return fetchRes;
+              });
+            }).catch(() => {
+              return caches.match('/');
+            })
+          );
+        });
+      `;
+
+      const swBlob = new Blob([swCode], { type: 'application/javascript' });
+      const swUrl = URL.createObjectURL(swBlob);
+
+      navigator.serviceWorker.register(swUrl).then(() => {
+        console.log('Service Worker 注册成功');
+      }).catch((err) => {
+        console.warn('Service Worker 注册失败:', err);
+      });
+    }
+  </script>
+</body>
+</html>
