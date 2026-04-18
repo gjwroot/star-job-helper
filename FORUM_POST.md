@@ -141,9 +141,10 @@ SVG 环形进度条 + 6 种预设时间，25 分钟工作后自动提醒休息 5
 ### 在线体验
 - 🌐 **Landing Page**: https://gjwroot.github.io/star-job-helper/
 - 📱 **主应用**: https://gjwroot.github.io/star-job-helper/frontend/index.html
-- 🔧 **管理后台**: https://gjwroot.github.io/star-job-helper/frontend/admin.html
 - 📄 **展示页**: https://gjwroot.github.io/star-job-helper/frontend/demo.html
 - 💻 **GitHub 仓库**: https://github.com/gjwroot/star-job-helper
+
+> ⚠️ 主应用和管理后台的完整功能需要本地启动后端服务（`cd backend && pip install -r requirements.txt && python3 main.py`），前端页面在 GitHub Pages 上可独立预览 UI 和交互效果。
 
 ### 技术亮点
 - ✅ 零构建前端：CDN 引入，打开 HTML 即可运行
